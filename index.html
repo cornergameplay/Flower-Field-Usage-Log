@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>皮克敏花田視覺化登記管理系統</title>
+    <title>皮克敏花田登記</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -11,16 +11,15 @@
            🌸 櫻花毛玻璃 (Glassmorphism) 全局設計
         ========================================== */
         body { 
-            background-color: #FFF0F5; /* Snow / 底色 */
+            background-color: #FFF0F5;
             background-image: 
                 radial-gradient(circle at 10% 10%, rgba(244, 207, 224, 0.7) 0%, transparent 50%),
                 radial-gradient(circle at 90% 90%, rgba(255, 183, 197, 0.6) 0%, transparent 50%);
             background-attachment: fixed;
-            color: #4A4A4A; /* 沈穩灰 */
+            color: #4A4A4A; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
         
-        /* 導覽列毛玻璃 */
         .navbar { 
             background: rgba(255, 255, 255, 0.45) !important; 
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -29,7 +28,6 @@
         }
         .navbar-brand { font-weight: 800; color: #DB7093 !important; letter-spacing: 1px; }
 
-        /* 卡片與區塊毛玻璃 */
         .glass-panel {
             background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -39,9 +37,8 @@
             overflow: hidden;
         }
 
-        /* 🌸 半透明質感按鈕 */
         .btn-glass {
-            background: rgba(255, 183, 197, 0.4); /* Light Peach 帶透明 */
+            background: rgba(255, 183, 197, 0.4); 
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.9);
             color: #DB7093;
@@ -50,79 +47,52 @@
             box-shadow: 0 4px 12px rgba(219, 112, 147, 0.08);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .btn-glass:hover {
-            background: #FFB7C5;
-            color: #FFF;
-            border-color: #FFB7C5;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
+        .btn-glass:hover:not(:disabled) {
+            background: #FFB7C5; color: #FFF; border-color: #FFB7C5;
+            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
         }
+        .btn-glass:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* 重點按鈕 (如確認送出) */
         .btn-glass-primary {
-            background: rgba(219, 112, 147, 0.85); /* Deep Rose 帶微透明 */
+            background: rgba(219, 112, 147, 0.85); 
             backdrop-filter: blur(4px);
             border: 1px solid #DB7093;
-            color: #FFF;
-            font-weight: bold;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            color: #FFF; font-weight: bold; border-radius: 8px; transition: all 0.3s ease;
         }
         .btn-glass-primary:hover {
             background: #DB7093; color: #FFF;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3);
+            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3);
         }
 
-        /* View Mode 切換按鈕專屬設計 */
-        .btn-check:checked + .btn-glass-outline {
-            background-color: #DB7093; color: #FFF; border-color: #DB7093;
-        }
-        .btn-glass-outline {
-            background: rgba(255, 255, 255, 0.5); border: 1px solid #FFB7C5; color: #DB7093; backdrop-filter: blur(4px); font-weight: 600;
-        }
+        .btn-check:checked + .btn-glass-outline { background-color: #DB7093; color: #FFF; border-color: #DB7093; }
+        .btn-glass-outline { background: rgba(255, 255, 255, 0.5); border: 1px solid #FFB7C5; color: #DB7093; backdrop-filter: blur(4px); font-weight: 600; }
         .btn-glass-outline:hover { background: #FFB7C5; color: #FFF; border-color: #FFB7C5; }
 
-        /* 表單輸入框柔和化 */
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.65);
-            border: 1px solid rgba(244, 207, 224, 0.9);
+            background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(244, 207, 224, 0.9);
             color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
         }
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: #DB7093;
-            box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15);
-        }
+        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.95); border-color: #DB7093; box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15); }
         .locked-field { background-color: rgba(244, 207, 224, 0.3) !important; color: #888; }
 
-        /* 視窗 (Modal) 設計 */
         .modal-content {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
+            border-radius: 20px; box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
         }
         .modal-header { border-bottom: 1px solid rgba(244, 207, 224, 0.7); }
         .modal-footer { border-top: 1px solid rgba(244, 207, 224, 0.7); }
         .sakura-header { background: rgba(255, 183, 197, 0.6); color: #DB7093; border-radius: 20px 20px 0 0; font-weight: bold; }
         .rose-header { background: rgba(219, 112, 147, 0.85); color: #FFF; border-radius: 20px 20px 0 0; font-weight: bold; }
 
-        /* 表格與列表 */
         .table { color: #4A4A4A; margin-bottom: 0; }
         .table-light th { 
-            background: rgba(255, 240, 245, 0.8) !important; 
-            backdrop-filter: blur(8px);
-            color: #DB7093; 
-            border-bottom: 2px solid #FFB7C5 !important; 
-            font-weight: 700;
+            background: rgba(255, 240, 245, 0.8) !important; backdrop-filter: blur(8px);
+            color: #DB7093; border-bottom: 2px solid #FFB7C5 !important; font-weight: 700;
         }
         .table td { border-bottom: 1px solid rgba(244, 207, 224, 0.4); }
-        .row-clickable { cursor: pointer; transition: background-color 0.2s; }
-        .row-clickable:hover { background-color: rgba(244, 207, 224, 0.4) !important; }
 
-        /* 地圖/畫布區域 */
         #visualArea { height: 500px; width: 100%; border: 2px solid rgba(255,255,255,0.9); border-radius: 16px; overflow: hidden; position: relative; background: rgba(255,255,255,0.4); }
         #map { height: 100%; width: 100%; }
         #canvasArea { height: 100%; width: 100%; display: none; cursor: pointer; }
@@ -142,7 +112,6 @@
 </nav>
 
 <div class="container-fluid px-4">
-    <!-- 頂部控制面板 -->
     <div class="row mb-3 align-items-end">
         <div class="col-md-3">
             <label class="form-label fw-bold" style="color: #DB7093;">分組篩選 (國家-地區)</label>
@@ -170,7 +139,7 @@
         </div>
     </div>
 
-    <!-- 表格區域 (毛玻璃卡片) -->
+    <!-- 表格區域與分頁控制器 -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="glass-panel">
@@ -178,19 +147,36 @@
                     <table class="table align-middle text-center">
                         <thead class="table-light">
                             <tr>
-                                <th>國家</th><th>地區</th><th>序號</th><th>目前狀態</th>
-                                <th>使用人</th><th>種植花朵</th><th>花朵數</th>
-                                <th>開始時間</th><th>重置時間</th><th>操作 / 下載</th>
+                                <th>登記</th>
+                                <!-- 電腦版顯示兩欄，手機版隱藏 -->
+                                <th class="d-none d-md-table-cell">國家</th>
+                                <th class="d-none d-md-table-cell">地區</th>
+                                <!-- 手機版專用合併欄位，電腦版隱藏 -->
+                                <th class="d-md-none">國家/地區</th>
+                                <th>序號</th>
+                                <th>狀態</th>
+                                <th>使用人</th>
+                                <th>種植花朵</th>
+                                <th>花朵數</th>
+                                <th class="d-none d-md-table-cell">開始時間</th>
+                                <th class="d-none d-md-table-cell">重置時間</th>
+                                <th>操作 / 下載</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
+                <!-- 極簡分頁按鈕區 -->
+                <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(244, 207, 224, 0.5);">
+                    <button class="btn btn-glass btn-sm" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
+                    <span id="pageIndicator" style="color: #DB7093; font-weight: bold;">1 / 1 頁</span>
+                    <button class="btn btn-glass btn-sm" id="nextPageBtn" onclick="changePage(1)">下一頁 ▶</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 視覺化區域 (毛玻璃框) -->
+    <!-- 視覺化區域 -->
     <div class="row mb-5">
         <div class="col-12">
             <div id="visualArea" class="shadow-sm">
@@ -212,7 +198,6 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="updCountry"><input type="hidden" id="updCity"><input type="hidden" id="updSeq">
-                
                 <div class="mb-3">
                     <label class="form-label fw-bold">目前狀態</label>
                     <select class="form-select" id="updStatus" onchange="toggleTimeFields()">
@@ -221,30 +206,26 @@
                         <option value="🔴 已種完">🔴 已種完</option>
                     </select>
                 </div>
-                
                 <div class="row mb-3">
                     <div class="col-6">
                         <label class="form-label fw-bold">使用人</label>
-                        <input type="text" class="form-control" id="updUser" placeholder="名字或遊戲ID">
+                        <input type="text" class="form-control" id="updUser" placeholder="名字或ID">
                     </div>
                     <div class="col-6">
                         <label class="form-label fw-bold">種植花朵</label>
                         <input type="text" class="form-control" id="updFlower" placeholder="例如：紅玫瑰">
                     </div>
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label fw-bold">花朵數 <span id="updOriginalCoords" class="text-secondary fw-normal ms-1" style="font-size: 0.85em;">(座標數判斷：0)</span></label>
                     <input type="number" class="form-control" id="updFlowerCount" min="0">
                 </div>
-
                 <div class="mb-3" id="startTimeContainer" style="display: none;">
                     <label class="form-label text-warning fw-bold">開始時間 (種花中)</label>
                     <input type="datetime-local" class="form-control" id="updStartTime">
                 </div>
-
                 <div class="mb-3" id="finishTimeContainer" style="display: none;">
-                    <label class="form-label fw-bold" style="color:#c62828;">完成時間 (選擇後將倒數23H重置)</label>
+                    <label class="form-label fw-bold" style="color:#c62828;">完成時間 (將倒數23H重置)</label>
                     <input type="datetime-local" class="form-control" id="updFinishTime">
                 </div>
             </div>
@@ -316,13 +297,17 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // ✅ 您的最新 API URL
     const API_URL = "https://script.google.com/macros/s/AKfycbz_k2bQ7PqCQF3T_7DJZsfijkaYm01abBzqd2B513Z6MJk4WkdicZ5BQ4SeiJe_l_2J/exec";
     
     let allData = [];
+    let currentFilteredData = [];
     let map = null;
     let polygonLayers = [];
     let isAdminLoggedIn = false;
+    
+    // 分頁控制變數
+    let currentPage = 1;
+    const itemsPerPage = 20;
     
     const colorConfig = { "🟢 閒置中": "#2e7d32", "🟡 種花中": "#f57f17", "🔴 已種完": "#c62828" };
     const fillConfig  = { "🟢 閒置中": "#4ade80", "🟡 種花中": "#facc15", "🔴 已種完": "#f87171" };
@@ -377,7 +362,7 @@
     }
 
     // ==========================================
-    // 帳號登入狀態管理
+    // 登入狀態管理
     // ==========================================
     function checkLoginStatus() {
         if(sessionStorage.getItem('admin_logged_in') === 'true') {
@@ -412,7 +397,7 @@
     }
 
     // ==========================================
-    // 渲染表格
+    // 分頁與渲染表格
     // ==========================================
     async function loadData() {
         document.getElementById("visualSpinner").style.display = "flex";
@@ -434,36 +419,79 @@
 
     function applyFilters() {
         const grp = document.getElementById("groupFilter").value, sts = document.getElementById("statusFilter").value;
-        let filtered = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
-        renderTable(filtered);
-        document.getElementById("modeMap").checked ? renderMap(filtered) : renderCanvas(filtered);
+        currentFilteredData = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
+        
+        currentPage = 1; // 重新篩選後回到第一頁
+        renderTable();
+        document.getElementById("modeMap").checked ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
     }
 
     function toggleViewMode() {
         const useMap = document.getElementById("modeMap").checked;
         document.getElementById("map").style.display = useMap ? "block" : "none";
         document.getElementById("canvasArea").style.display = useMap ? "none" : "block";
-        applyFilters();
+        document.getElementById("modeMap").checked ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
     }
 
-    function renderTable(data) {
+    function changePage(delta) {
+        const totalPages = Math.ceil(currentFilteredData.length / itemsPerPage) || 1;
+        currentPage += delta;
+        if(currentPage < 1) currentPage = 1;
+        if(currentPage > totalPages) currentPage = totalPages;
+        renderTable();
+    }
+
+    function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
-        data.forEach(d => {
+        
+        const totalPages = Math.ceil(currentFilteredData.length / itemsPerPage) || 1;
+        document.getElementById("pageIndicator").innerText = `${currentPage} / ${totalPages} 頁`;
+        document.getElementById("prevPageBtn").disabled = (currentPage === 1);
+        document.getElementById("nextPageBtn").disabled = (currentPage === totalPages);
+
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const pageData = currentFilteredData.slice(startIdx, startIdx + itemsPerPage);
+
+        pageData.forEach(d => {
             let stTime = (d.status === "🟡 種花中" && d.startTime) ? formatShortTime(d.startTime) : "無";
             let rTime  = (d.status === "🔴 已種完" && d.finishTime) ? calcResetTime(d.finishTime) : "無";
             
+            // 擷取狀態燈號圖示 (如 🟢)
+            let statusIcon = d.status.substring(0, 2); 
+            
             const tr = document.createElement("tr");
-            tr.className = "row-clickable";
-            tr.onclick = () => openUpdateModal(d.country, d.city, d.seq);
             
             tr.innerHTML = `
-                <td>${d.country}</td><td>${d.city}</td><td>${d.seq}</td>
-                <td style="color:${colorConfig[d.status]}; font-weight:bold;">${d.status}</td>
-                <td>${d.user || '無'}</td><td>${d.flower || '無'}</td>
+                <!-- 專屬登記按鈕 -->
+                <td><button class="btn btn-sm btn-glass px-2 py-0" style="font-size:16px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
+                
+                <!-- 電腦版分離，手機版隱藏 -->
+                <td class="d-none d-md-table-cell">${d.country}</td>
+                <td class="d-none d-md-table-cell">${d.city}</td>
+                
+                <!-- 手機版合併，電腦版隱藏 -->
+                <td class="d-md-none fw-bold" style="font-size:0.9em; line-height:1.3;">
+                    ${d.country}<br><span class="text-secondary fw-normal">${d.city}</span>
+                </td>
+                
+                <td>${d.seq}</td>
+                
+                <!-- 手機版僅顯示圖示，電腦版顯示完整文字 -->
+                <td style="color:${colorConfig[d.status]}; font-weight:bold;">
+                    <span class="d-md-none fs-5">${statusIcon}</span>
+                    <span class="d-none d-md-inline">${d.status}</span>
+                </td>
+                
+                <td>${d.user || '無'}</td>
+                <td>${d.flower || '無'}</td>
                 <td>${d.flowerCount || 0}</td>
-                <td>${stTime}</td><td>${rTime}</td>
-                <td onclick="event.stopPropagation();">
+                
+                <!-- 時間保留在電腦版 -->
+                <td class="d-none d-md-table-cell">${stTime}</td>
+                <td class="d-none d-md-table-cell">${rTime}</td>
+                
+                <td>
                     <button class="btn btn-sm btn-glass px-2 py-0" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
                     <button class="btn btn-sm btn-glass px-2 py-0 ms-1" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
                 </td>
@@ -473,7 +501,7 @@
     }
 
     // ==========================================
-    // 地圖與畫布 (質感白框)
+    // 地圖與畫布
     // ==========================================
     function initMap() {
         map = L.map('map').setView([20, 0], 2);
@@ -492,7 +520,6 @@
             if(hullPoints.length > 0) {
                 const poly = L.polygon(hullPoints, { color: colorConfig[d.status], fillColor: fillConfig[d.status], fillOpacity: 0.6, weight: 2 }).addTo(map);
                 
-                // 櫻花透光質感 Map Label
                 const labelHtml = `<div style="background:rgba(255,240,245,0.85); padding:2px 8px; border-radius:6px; font-size:12px; font-weight:bold; border:1px solid #FFB7C5; color:#4A4A4A; display:inline-block; white-space:nowrap; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(219,112,147,0.2); backdrop-filter: blur(4px);">${d.city}${d.seq}</div>`;
                 const mk = L.marker(poly.getBounds().getCenter(), {
                     icon: L.divIcon({ className: 'map-label', html: labelHtml, iconSize: [0, 0] })
@@ -540,14 +567,12 @@
             ctx.fillStyle = fillConfig[d.status]; ctx.globalAlpha = 0.7; ctx.fill(p2d);
             ctx.strokeStyle = colorConfig[d.status]; ctx.globalAlpha = 1.0; ctx.lineWidth = 2; ctx.stroke(p2d);
             
-            // 畫布透光質感標籤
             ctx.font = 'bold 12px Arial';
             const textStr = `${d.city}${d.seq}`;
             const textWidth = ctx.measureText(textStr).width;
             const cx = sumX / d.pts.length, cy = sumY / d.pts.length;
             
             ctx.fillStyle = 'rgba(255, 240, 245, 0.85)';
-            // 讓圓角效果模擬
             ctx.beginPath();
             ctx.roundRect(cx - textWidth/2 - 6, cy - 12, textWidth + 12, 24, 6);
             ctx.fill();
@@ -571,7 +596,7 @@
     window.addEventListener('resize', () => { if(document.getElementById("modeCanvas").checked) applyFilters(); });
 
     // ==========================================
-    // 狀態更新與防呆解鎖
+    // 狀態更新防呆解鎖
     // ==========================================
     let isModalLocked = false;
 
