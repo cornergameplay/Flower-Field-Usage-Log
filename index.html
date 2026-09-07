@@ -37,6 +37,18 @@
             overflow: hidden;
         }
 
+        /* 控制面板置頂懸浮樣式 */
+        .sticky-glass-controls {
+            position: sticky;
+            top: 15px; /* 距離頂部一點點，增加質感 */
+            z-index: 1030;
+            background: rgba(255, 240, 245, 0.75);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
+        }
+
         .btn-glass {
             background: rgba(255, 183, 197, 0.4); 
             backdrop-filter: blur(4px);
@@ -112,30 +124,34 @@
 </nav>
 
 <div class="container-fluid px-4">
-    <div class="row mb-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label fw-bold" style="color: #DB7093;">分組篩選 (國家-地區)</label>
-            <select class="form-select" id="groupFilter" onchange="applyFilters()">
-                <option value="ALL">全部花田</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label fw-bold" style="color: #DB7093;">狀態篩選</label>
-            <select class="form-select" id="statusFilter" onchange="applyFilters()">
-                <option value="ALL">所有狀態</option>
-                <option value="🟢 閒置中">🟢 閒置中</option>
-                <option value="🟡 種花中">🟡 種花中</option>
-                <option value="🔴 已種完">🔴 已種完</option>
-            </select>
-        </div>
-        <div class="col-md-6 text-end mt-3 mt-md-0">
-            <div class="btn-group shadow-sm rounded-3" role="group">
-                <input type="radio" class="btn-check" name="viewMode" id="modeMap" autocomplete="off" checked onchange="toggleViewMode()">
-                <label class="btn btn-glass-outline" for="modeMap">🗺️ 真實地圖</label>
-                <input type="radio" class="btn-check" name="viewMode" id="modeCanvas" autocomplete="off" onchange="toggleViewMode()">
-                <label class="btn btn-glass-outline" for="modeCanvas">⬜ 白板畫布</label>
+    
+    <!-- 頂部控制面板 (加入 sticky-glass-controls 置頂懸浮樣式) -->
+    <div class="sticky-glass-controls p-3 mb-4">
+        <div class="row align-items-end">
+            <div class="col-md-3 mb-2 mb-md-0">
+                <label class="form-label fw-bold" style="color: #DB7093;">分組篩選 (國家-地區)</label>
+                <select class="form-select" id="groupFilter" onchange="applyFilters()">
+                    <option value="ALL">全部花田</option>
+                </select>
             </div>
-            <button class="btn btn-glass shadow-sm ms-2" onclick="loadData()">🔄 重新整理</button>
+            <div class="col-md-3 mb-2 mb-md-0">
+                <label class="form-label fw-bold" style="color: #DB7093;">狀態篩選</label>
+                <select class="form-select" id="statusFilter" onchange="applyFilters()">
+                    <option value="ALL">所有狀態</option>
+                    <option value="🟢 閒置中">🟢 閒置中</option>
+                    <option value="🟡 種花中">🟡 種花中</option>
+                    <option value="🔴 已種完">🔴 已種完</option>
+                </select>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group shadow-sm rounded-3" role="group">
+                    <input type="radio" class="btn-check" name="viewMode" id="modeMap" autocomplete="off" checked onchange="toggleViewMode()">
+                    <label class="btn btn-glass-outline" for="modeMap">🗺️ 真實地圖</label>
+                    <input type="radio" class="btn-check" name="viewMode" id="modeCanvas" autocomplete="off" onchange="toggleViewMode()">
+                    <label class="btn btn-glass-outline" for="modeCanvas">⬜ 白板畫布</label>
+                </div>
+                <button class="btn btn-glass shadow-sm ms-2" onclick="loadData()">🔄 重新整理</button>
+            </div>
         </div>
     </div>
 
@@ -148,10 +164,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th>登記</th>
-                                <!-- 電腦版顯示兩欄，手機版隱藏 -->
                                 <th class="d-none d-md-table-cell">國家</th>
                                 <th class="d-none d-md-table-cell">地區</th>
-                                <!-- 手機版專用合併欄位，電腦版隱藏 -->
                                 <th class="d-md-none">國家/地區</th>
                                 <th>序號</th>
                                 <th>狀態</th>
@@ -166,7 +180,6 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <!-- 極簡分頁按鈕區 -->
                 <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(244, 207, 224, 0.5);">
                     <button class="btn btn-glass btn-sm" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
                     <span id="pageIndicator" style="color: #DB7093; font-weight: bold;">1 / 1 頁</span>
@@ -421,7 +434,7 @@
         const grp = document.getElementById("groupFilter").value, sts = document.getElementById("statusFilter").value;
         currentFilteredData = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
         
-        currentPage = 1; // 重新篩選後回到第一頁
+        currentPage = 1; 
         renderTable();
         document.getElementById("modeMap").checked ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
     }
@@ -456,28 +469,22 @@
         pageData.forEach(d => {
             let stTime = (d.status === "🟡 種花中" && d.startTime) ? formatShortTime(d.startTime) : "無";
             let rTime  = (d.status === "🔴 已種完" && d.finishTime) ? calcResetTime(d.finishTime) : "無";
-            
-            // 擷取狀態燈號圖示 (如 🟢)
             let statusIcon = d.status.substring(0, 2); 
             
             const tr = document.createElement("tr");
             
             tr.innerHTML = `
-                <!-- 專屬登記按鈕 -->
-                <td><button class="btn btn-sm btn-glass px-2 py-0" style="font-size:16px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
+                <!-- 修復按鈕點擊：強制將變數轉換為文字型態，避免底層判斷失敗 -->
+                <td><button type="button" class="btn btn-sm btn-glass px-2 py-0" style="font-size:16px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
                 
-                <!-- 電腦版分離，手機版隱藏 -->
                 <td class="d-none d-md-table-cell">${d.country}</td>
                 <td class="d-none d-md-table-cell">${d.city}</td>
-                
-                <!-- 手機版合併，電腦版隱藏 -->
                 <td class="d-md-none fw-bold" style="font-size:0.9em; line-height:1.3;">
                     ${d.country}<br><span class="text-secondary fw-normal">${d.city}</span>
                 </td>
                 
                 <td>${d.seq}</td>
                 
-                <!-- 手機版僅顯示圖示，電腦版顯示完整文字 -->
                 <td style="color:${colorConfig[d.status]}; font-weight:bold;">
                     <span class="d-md-none fs-5">${statusIcon}</span>
                     <span class="d-none d-md-inline">${d.status}</span>
@@ -487,13 +494,12 @@
                 <td>${d.flower || '無'}</td>
                 <td>${d.flowerCount || 0}</td>
                 
-                <!-- 時間保留在電腦版 -->
                 <td class="d-none d-md-table-cell">${stTime}</td>
                 <td class="d-none d-md-table-cell">${rTime}</td>
                 
                 <td>
-                    <button class="btn btn-sm btn-glass px-2 py-0" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
-                    <button class="btn btn-sm btn-glass px-2 py-0 ms-1" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
+                    <button type="button" class="btn btn-sm btn-glass px-2 py-0" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
+                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 ms-1" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -601,8 +607,13 @@
     let isModalLocked = false;
 
     function openUpdateModal(country, city, seq) {
-        const t = allData.find(d => d.country===country && d.city===city && d.seq===seq);
-        if(!t) return;
+        // 修復底層判斷：強制將兩者轉為文字比對
+        const t = allData.find(d => String(d.country)===String(country) && String(d.city)===String(city) && String(d.seq)===String(seq));
+        if(!t) {
+            alert("找不到該筆資料，請重新整理網頁！");
+            return;
+        }
+        
         document.getElementById("updateModalTitle").innerText = `管理區塊：${city}${seq}`;
         document.getElementById("updCountry").value = country; 
         document.getElementById("updCity").value = city; 
