@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮克敏花田視覺化登記管理系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* ==========================================
+           🌸 櫻花毛玻璃 (Glassmorphism) 全局設計
+        ========================================== */
+        body { 
+            background-color: #FFF0F5; /* Snow / 底色 */
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(244, 207, 224, 0.7) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(255, 183, 197, 0.6) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: #4A4A4A; /* 沈穩灰 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        /* 導覽列毛玻璃 */
+        .navbar { 
+            background: rgba(255, 255, 255, 0.45) !important; 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 20px rgba(219, 112, 147, 0.05);
+        }
+        .navbar-brand { font-weight: 800; color: #DB7093 !important; letter-spacing: 1px; }
+
+        /* 卡片與區塊毛玻璃 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 8px 32px 0 rgba(219, 112, 147, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        /* 🌸 半透明質感按鈕 */
+        .btn-glass {
+            background: rgba(255, 183, 197, 0.4); /* Light Peach 帶透明 */
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            color: #DB7093;
+            font-weight: 600;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(219, 112, 147, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-glass:hover {
+            background: #FFB7C5;
+            color: #FFF;
+            border-color: #FFB7C5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
+        }
+        
+        /* 重點按鈕 (如確認送出) */
+        .btn-glass-primary {
+            background: rgba(219, 112, 147, 0.85); /* Deep Rose 帶微透明 */
+            backdrop-filter: blur(4px);
+            border: 1px solid #DB7093;
+            color: #FFF;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-glass-primary:hover {
+            background: #DB7093; color: #FFF;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3);
+        }
+
+        /* View Mode 切換按鈕專屬設計 */
+        .btn-check:checked + .btn-glass-outline {
+            background-color: #DB7093; color: #FFF; border-color: #DB7093;
+        }
+        .btn-glass-outline {
+            background: rgba(255, 255, 255, 0.5); border: 1px solid #FFB7C5; color: #DB7093; backdrop-filter: blur(4px); font-weight: 600;
+        }
+        .btn-glass-outline:hover { background: #FFB7C5; color: #FFF; border-color: #FFB7C5; }
+
+        /* 表單輸入框柔和化 */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(244, 207, 224, 0.9);
+            color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #DB7093;
+            box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15);
+        }
+        .locked-field { background-color: rgba(244, 207, 224, 0.3) !important; color: #888; }
+
+        /* 視窗 (Modal) 設計 */
+        .modal-content {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
+        }
+        .modal-header { border-bottom: 1px solid rgba(244, 207, 224, 0.7); }
+        .modal-footer { border-top: 1px solid rgba(244, 207, 224, 0.7); }
+        .sakura-header { background: rgba(255, 183, 197, 0.6); color: #DB7093; border-radius: 20px 20px 0 0; font-weight: bold; }
+        .rose-header { background: rgba(219, 112, 147, 0.85); color: #FFF; border-radius: 20px 20px 0 0; font-weight: bold; }
+
+        /* 表格與列表 */
+        .table { color: #4A4A4A; margin-bottom: 0; }
+        .table-light th { 
+            background: rgba(255, 240, 245, 0.8) !important; 
+            backdrop-filter: blur(8px);
+            color: #DB7093; 
+            border-bottom: 2px solid #FFB7C5 !important; 
+            font-weight: 700;
+        }
+        .table td { border-bottom: 1px solid rgba(244, 207, 224, 0.4); }
+        .row-clickable { cursor: pointer; transition: background-color 0.2s; }
+        .row-clickable:hover { background-color: rgba(244, 207, 224, 0.4) !important; }
+
+        /* 地圖/畫布區域 */
+        #visualArea { height: 500px; width: 100%; border: 2px solid rgba(255,255,255,0.9); border-radius: 16px; overflow: hidden; position: relative; background: rgba(255,255,255,0.4); }
+        #map { height: 100%; width: 100%; }
+        #canvasArea { height: 100%; width: 100%; display: none; cursor: pointer; }
+        .spinner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 240, 245, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; color: #DB7093; display: none; border-radius: 16px; }
+        .map-label { background: transparent; border: none; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">🌸 皮克敏花田視覺化管理系統</a>
+        <div id="navButtons">
+            <button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 管理員建檔</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4">
+    <!-- 頂部控制面板 -->
+    <div class="row mb-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label fw-bold" style="color: #DB7093;">分組篩選 (國家-地區)</label>
+            <select class="form-select" id="groupFilter" onchange="applyFilters()">
+                <option value="ALL">全部花田</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold" style="color: #DB7093;">狀態篩選</label>
+            <select class="form-select" id="statusFilter" onchange="applyFilters()">
+                <option value="ALL">所有狀態</option>
+                <option value="🟢 閒置中">🟢 閒置中</option>
+                <option value="🟡 種花中">🟡 種花中</option>
+                <option value="🔴 已種完">🔴 已種完</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-end mt-3 mt-md-0">
+            <div class="btn-group shadow-sm rounded-3" role="group">
+                <input type="radio" class="btn-check" name="viewMode" id="modeMap" autocomplete="off" checked onchange="toggleViewMode()">
+                <label class="btn btn-glass-outline" for="modeMap">🗺️ 真實地圖</label>
+                <input type="radio" class="btn-check" name="viewMode" id="modeCanvas" autocomplete="off" onchange="toggleViewMode()">
+                <label class="btn btn-glass-outline" for="modeCanvas">⬜ 白板畫布</label>
+            </div>
+            <button class="btn btn-glass shadow-sm ms-2" onclick="loadData()">🔄 重新整理</button>
+        </div>
+    </div>
+
+    <!-- 表格區域 (毛玻璃卡片) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-panel">
+                <div class="table-responsive">
+                    <table class="table align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>國家</th><th>地區</th><th>序號</th><th>目前狀態</th>
+                                <th>使用人</th><th>種植花朵</th><th>花朵數</th>
+                                <th>開始時間</th><th>重置時間</th><th>操作 / 下載</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 視覺化區域 (毛玻璃框) -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div id="visualArea" class="shadow-sm">
+                <div id="map"></div>
+                <canvas id="canvasArea"></canvas>
+                <div class="spinner-overlay" id="visualSpinner">🌸 資料載入中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 狀態更新 Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header sakura-header">
+                <h5 class="modal-title" id="updateModalTitle">更新花田狀態</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="updCountry"><input type="hidden" id="updCity"><input type="hidden" id="updSeq">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">目前狀態</label>
+                    <select class="form-select" id="updStatus" onchange="toggleTimeFields()">
+                        <option value="🟢 閒置中">🟢 閒置中</option>
+                        <option value="🟡 種花中">🟡 種花中</option>
+                        <option value="🔴 已種完">🔴 已種完</option>
+                    </select>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">使用人</label>
+                        <input type="text" class="form-control" id="updUser" placeholder="名字或遊戲ID">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold">種植花朵</label>
+                        <input type="text" class="form-control" id="updFlower" placeholder="例如：紅玫瑰">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">花朵數 <span id="updOriginalCoords" class="text-secondary fw-normal ms-1" style="font-size: 0.85em;">(座標數判斷：0)</span></label>
+                    <input type="number" class="form-control" id="updFlowerCount" min="0">
+                </div>
+
+                <div class="mb-3" id="startTimeContainer" style="display: none;">
+                    <label class="form-label text-warning fw-bold">開始時間 (種花中)</label>
+                    <input type="datetime-local" class="form-control" id="updStartTime">
+                </div>
+
+                <div class="mb-3" id="finishTimeContainer" style="display: none;">
+                    <label class="form-label fw-bold" style="color:#c62828;">完成時間 (選擇後將倒數23H重置)</label>
+                    <input type="datetime-local" class="form-control" id="updFinishTime">
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold border-0 bg-transparent" id="adminUnlockBtn" onclick="unlockForm()" style="display: none; color:#c62828;">🔓 解鎖修改</button>
+                <div class="w-100 text-end" id="normalActionBtns">
+                    <button type="button" class="btn btn-glass" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-glass-primary ms-2" onclick="submitUpdate()">確認更新</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 管理員登入 Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header rose-header">
+                <h5 class="modal-title">🔐 管理員登入</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3"><label class="form-label fw-bold">帳號</label><input type="text" class="form-control" id="loginAcc"></div>
+                <div class="mb-3"><label class="form-label fw-bold">密碼</label><input type="password" class="form-control" id="loginPwd"></div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-glass-primary w-100" onclick="verifyLogin()">登入</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- 管理員建檔 Modal -->
+<div class="modal fade" id="adminModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header rose-header">
+                <h5 class="modal-title">⚙️ 花田建檔管理</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert" style="background: rgba(255, 183, 197, 0.3); border: 1px solid #FFB7C5; border-radius: 12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span style="color: #DB7093;"><strong>智慧讀取：</strong>匯入檔案或貼上座標會自動判斷；若需重新判斷請按右方按鈕。</span>
+                        <button class="btn btn-glass btn-sm fw-bold shadow-sm" onclick="handleManualParse()">🔄 重新解析</button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <input class="form-control" type="file" id="gpxFile" accept=".gpx" onchange="handleGpxChange(event)">
+                    <div id="gpxStatus" class="form-text mt-1"></div>
+                </div>
+                <hr style="border-color: #F4CFE0;">
+                <div class="row">
+                    <div class="col-md-3 mb-3"><label class="form-label fw-bold">國家 (繁體中文)</label><input type="text" class="form-control" id="admCountry"></div>
+                    <div class="col-md-3 mb-3"><label class="form-label fw-bold">地區 (英文)</label><input type="text" class="form-control" id="admCity"></div>
+                    <div class="col-md-3 mb-3"><label class="form-label fw-bold">序號 (00-99)</label><select class="form-select" id="admSeq"></select></div>
+                    <div class="col-md-3 mb-3"><label class="form-label fw-bold">花朵數 (可修改)</label><input type="number" class="form-control" id="admFlowerCount" min="0"></div>
+                </div>
+                <div class="mb-3"><label class="form-label fw-bold">多邊形邊界座標 (貼上時自動判斷)</label><textarea class="form-control" id="admCoords" rows="5" onpaste="handleCoordsPaste()"></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-glass-primary ms-2" id="btnAdminSubmit" onclick="submitAdmin()">建立花田資料</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // ✅ 您的最新 API URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbz_k2bQ7PqCQF3T_7DJZsfijkaYm01abBzqd2B513Z6MJk4WkdicZ5BQ4SeiJe_l_2J/exec";
+    
+    let allData = [];
+    let map = null;
+    let polygonLayers = [];
+    let isAdminLoggedIn = false;
+    
+    const colorConfig = { "🟢 閒置中": "#2e7d32", "🟡 種花中": "#f57f17", "🔴 已種完": "#c62828" };
+    const fillConfig  = { "🟢 閒置中": "#4ade80", "🟡 種花中": "#facc15", "🔴 已種完": "#f87171" };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initMap();
+        generateSeqOptions();
+        checkLoginStatus();
+        loadData();
+        document.getElementById("canvasArea").addEventListener("click", handleCanvasClick);
+    });
+
+    function formatShortTime(isoStr) {
+        if(!isoStr) return "無";
+        const d = new Date(isoStr);
+        if(isNaN(d.getTime())) return "無";
+        return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+    
+    function calcResetTime(isoStr) {
+        if(!isoStr) return "無";
+        const d = new Date(isoStr);
+        if(isNaN(d.getTime())) return "無";
+        d.setHours(d.getHours() + 23);
+        return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    function convexHull(points) {
+        if (points.length <= 3) return points;
+        points.sort((a, b) => a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1]);
+        const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+        const lower = [];
+        for (let i = 0; i < points.length; i++) {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points[i]) <= 0) lower.pop();
+            lower.push(points[i]);
+        }
+        const upper = [];
+        for (let i = points.length - 1; i >= 0; i--) {
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points[i]) <= 0) upper.pop();
+            upper.push(points[i]);
+        }
+        upper.pop(); lower.pop();
+        return lower.concat(upper);
+    }
+
+    function generateSeqOptions() {
+        const sel = document.getElementById("admSeq");
+        for(let i=0; i<=99; i++){
+            let val = String(i).padStart(2, '0');
+            sel.innerHTML += `<option value="${val}">${val}</option>`;
+        }
+    }
+
+    // ==========================================
+    // 帳號登入狀態管理
+    // ==========================================
+    function checkLoginStatus() {
+        if(sessionStorage.getItem('admin_logged_in') === 'true') {
+            isAdminLoggedIn = true;
+            renderAdminNav();
+        }
+    }
+
+    function verifyLogin() {
+        if(document.getElementById('loginAcc').value === 'adminccfh' && document.getElementById('loginPwd').value === 'adminccfh') {
+            sessionStorage.setItem('admin_logged_in', 'true');
+            isAdminLoggedIn = true;
+            bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+            document.getElementById('loginAcc').value = ''; document.getElementById('loginPwd').value = '';
+            renderAdminNav();
+            new bootstrap.Modal(document.getElementById('adminModal')).show();
+        } else alert('❌ 帳號或密碼錯誤！');
+    }
+
+    function logoutAdmin() {
+        sessionStorage.removeItem('admin_logged_in');
+        isAdminLoggedIn = false;
+        alert("已成功登出管理員身分。");
+        document.getElementById('navButtons').innerHTML = `<button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 管理員建檔</button>`;
+    }
+
+    function renderAdminNav() {
+        document.getElementById('navButtons').innerHTML = `
+            <button class="btn btn-glass-primary btn-sm me-2 px-3" onclick="new bootstrap.Modal(document.getElementById('adminModal')).show()">⚙️ 新增花田</button>
+            <button class="btn btn-glass btn-sm px-3" onclick="logoutAdmin()">🚪 登出</button>
+        `;
+    }
+
+    // ==========================================
+    // 渲染表格
+    // ==========================================
+    async function loadData() {
+        document.getElementById("visualSpinner").style.display = "flex";
+        try {
+            allData = await fetch(API_URL).then(r=>r.json());
+            updateGroupDropdown();
+            applyFilters();
+        } catch (err) { console.error(err); }
+        document.getElementById("visualSpinner").style.display = "none";
+    }
+
+    function updateGroupDropdown() {
+        const groups = new Set();
+        allData.forEach(d => groups.add(`${d.country}-${d.city}`));
+        const sel = document.getElementById("groupFilter");
+        sel.innerHTML = '<option value="ALL">全部花田</option>';
+        groups.forEach(g => sel.innerHTML += `<option value="${g}">${g}</option>`);
+    }
+
+    function applyFilters() {
+        const grp = document.getElementById("groupFilter").value, sts = document.getElementById("statusFilter").value;
+        let filtered = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
+        renderTable(filtered);
+        document.getElementById("modeMap").checked ? renderMap(filtered) : renderCanvas(filtered);
+    }
+
+    function toggleViewMode() {
+        const useMap = document.getElementById("modeMap").checked;
+        document.getElementById("map").style.display = useMap ? "block" : "none";
+        document.getElementById("canvasArea").style.display = useMap ? "none" : "block";
+        applyFilters();
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        data.forEach(d => {
+            let stTime = (d.status === "🟡 種花中" && d.startTime) ? formatShortTime(d.startTime) : "無";
+            let rTime  = (d.status === "🔴 已種完" && d.finishTime) ? calcResetTime(d.finishTime) : "無";
+            
+            const tr = document.createElement("tr");
+            tr.className = "row-clickable";
+            tr.onclick = () => openUpdateModal(d.country, d.city, d.seq);
+            
+            tr.innerHTML = `
+                <td>${d.country}</td><td>${d.city}</td><td>${d.seq}</td>
+                <td style="color:${colorConfig[d.status]}; font-weight:bold;">${d.status}</td>
+                <td>${d.user || '無'}</td><td>${d.flower || '無'}</td>
+                <td>${d.flowerCount || 0}</td>
+                <td>${stTime}</td><td>${rTime}</td>
+                <td onclick="event.stopPropagation();">
+                    <button class="btn btn-sm btn-glass px-2 py-0" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
+                    <button class="btn btn-sm btn-glass px-2 py-0 ms-1" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ==========================================
+    // 地圖與畫布 (質感白框)
+    // ==========================================
+    function initMap() {
+        map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+
+    function renderMap(data) {
+        polygonLayers.forEach(l => map.removeLayer(l)); polygonLayers = [];
+        if(data.length === 0) return;
+        let bounds = L.latLngBounds();
+        data.forEach(d => {
+            if(!d.coordinates) return;
+            let rawPoints = d.coordinates.split(';').filter(p=>p).map(p => [parseFloat(p.split(',')[0]), parseFloat(p.split(',')[1])]);
+            let hullPoints = convexHull(rawPoints);
+            
+            if(hullPoints.length > 0) {
+                const poly = L.polygon(hullPoints, { color: colorConfig[d.status], fillColor: fillConfig[d.status], fillOpacity: 0.6, weight: 2 }).addTo(map);
+                
+                // 櫻花透光質感 Map Label
+                const labelHtml = `<div style="background:rgba(255,240,245,0.85); padding:2px 8px; border-radius:6px; font-size:12px; font-weight:bold; border:1px solid #FFB7C5; color:#4A4A4A; display:inline-block; white-space:nowrap; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(219,112,147,0.2); backdrop-filter: blur(4px);">${d.city}${d.seq}</div>`;
+                const mk = L.marker(poly.getBounds().getCenter(), {
+                    icon: L.divIcon({ className: 'map-label', html: labelHtml, iconSize: [0, 0] })
+                }).addTo(map);
+                
+                polygonLayers.push(poly, mk);
+                poly.on('click', () => openUpdateModal(d.country, d.city, d.seq));
+                mk.on('click', () => openUpdateModal(d.country, d.city, d.seq));
+                bounds.extend(poly.getBounds());
+            }
+        });
+        if (bounds.isValid() && document.getElementById("groupFilter").value !== "ALL") map.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    let currentCanvasPaths = [];
+    function renderCanvas(data) {
+        const canvas = document.getElementById("canvasArea");
+        canvas.width = document.getElementById("visualArea").clientWidth; canvas.height = document.getElementById("visualArea").clientHeight;
+        const ctx = canvas.getContext("2d"); ctx.clearRect(0, 0, canvas.width, canvas.height); currentCanvasPaths = [];
+        if(data.length === 0) return;
+        let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+        const parsedData = data.map(d => {
+            if(!d.coordinates) return null;
+            let rawPts = d.coordinates.split(';').filter(p=>p).map(p => {
+                const [lat, lng] = p.split(',').map(Number);
+                if(lat < minLat) minLat = lat; if(lat > maxLat) maxLat = lat;
+                if(lng < minLng) minLng = lng; if(lng > maxLng) maxLng = lng;
+                return [lat, lng];
+            });
+            return { ...d, pts: convexHull(rawPts) }; 
+        }).filter(d => d && d.pts.length > 0);
+        if(parsedData.length === 0) return;
+        
+        const scale = Math.min((canvas.width - 100) / ((maxLng - minLng) || 0.0001), (canvas.height - 100) / ((maxLat - minLat) || 0.0001));
+        const offsetX = 50 + (canvas.width - 100 - (maxLng - minLng) * scale) / 2;
+        const offsetY = 50 + (canvas.height - 100 - (maxLat - minLat) * scale) / 2;
+        
+        parsedData.forEach(d => {
+            const p2d = new Path2D(); let sumX = 0, sumY = 0;
+            d.pts.forEach((pt, idx) => {
+                const x = offsetX + (pt[1] - minLng) * scale, y = canvas.height - (offsetY + (pt[0] - minLat) * scale);
+                sumX += x; sumY += y; idx === 0 ? p2d.moveTo(x, y) : p2d.lineTo(x, y);
+            });
+            p2d.closePath();
+            ctx.fillStyle = fillConfig[d.status]; ctx.globalAlpha = 0.7; ctx.fill(p2d);
+            ctx.strokeStyle = colorConfig[d.status]; ctx.globalAlpha = 1.0; ctx.lineWidth = 2; ctx.stroke(p2d);
+            
+            // 畫布透光質感標籤
+            ctx.font = 'bold 12px Arial';
+            const textStr = `${d.city}${d.seq}`;
+            const textWidth = ctx.measureText(textStr).width;
+            const cx = sumX / d.pts.length, cy = sumY / d.pts.length;
+            
+            ctx.fillStyle = 'rgba(255, 240, 245, 0.85)';
+            // 讓圓角效果模擬
+            ctx.beginPath();
+            ctx.roundRect(cx - textWidth/2 - 6, cy - 12, textWidth + 12, 24, 6);
+            ctx.fill();
+            ctx.strokeStyle = '#FFB7C5'; ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#4A4A4A'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(textStr, cx, cy);
+            currentCanvasPaths.push({ path: p2d, info: d });
+        });
+    }
+
+    function handleCanvasClick(e) {
+        const rect = e.target.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top, ctx = e.target.getContext("2d");
+        for (let i = currentCanvasPaths.length - 1; i >= 0; i--) {
+            if (ctx.isPointInPath(currentCanvasPaths[i].path, x, y)) {
+                openUpdateModal(currentCanvasPaths[i].info.country, currentCanvasPaths[i].info.city, currentCanvasPaths[i].info.seq); break;
+            }
+        }
+    }
+    window.addEventListener('resize', () => { if(document.getElementById("modeCanvas").checked) applyFilters(); });
+
+    // ==========================================
+    // 狀態更新與防呆解鎖
+    // ==========================================
+    let isModalLocked = false;
+
+    function openUpdateModal(country, city, seq) {
+        const t = allData.find(d => d.country===country && d.city===city && d.seq===seq);
+        if(!t) return;
+        document.getElementById("updateModalTitle").innerText = `管理區塊：${city}${seq}`;
+        document.getElementById("updCountry").value = country; 
+        document.getElementById("updCity").value = city; 
+        document.getElementById("updSeq").value = seq;
+        document.getElementById("updStatus").value = t.status;
+        document.getElementById("updUser").value = t.user === '無' ? '' : t.user;
+        document.getElementById("updFlower").value = t.flower === '無' ? '' : t.flower;
+        document.getElementById("updFlowerCount").value = t.flowerCount || 0;
+        
+        let originalCount = t.coordinates ? t.coordinates.split(';').filter(p=>p).length : 0;
+        document.getElementById("updOriginalCoords").innerText = `(原始座標數判斷：${originalCount})`;
+        
+        document.getElementById("updStartTime").value = t.startTime ? formatISOToLocal(t.startTime) : "";
+        document.getElementById("updFinishTime").value = t.finishTime ? formatISOToLocal(t.finishTime) : "";
+        
+        toggleTimeFields();
+
+        if (t.status === "🔴 已種完") {
+            setFormReadOnly(true);
+            document.getElementById("adminUnlockBtn").style.display = "block";
+            document.getElementById("normalActionBtns").style.display = "none";
+        } else {
+            setFormReadOnly(false);
+            document.getElementById("adminUnlockBtn").style.display = "none";
+            document.getElementById("normalActionBtns").style.display = "block";
+        }
+        
+        new bootstrap.Modal(document.getElementById('updateModal')).show();
+    }
+
+    function formatISOToLocal(iso) {
+        return new Date(new Date(iso).getTime() - new Date().getTimezoneOffset()*60000).toISOString().slice(0, 16);
+    }
+
+    function toggleTimeFields() {
+        const st = document.getElementById("updStatus").value;
+        document.getElementById("startTimeContainer").style.display  = (st === "🟡 種花中") ? "block" : "none";
+        document.getElementById("finishTimeContainer").style.display = (st === "🔴 已種完") ? "block" : "none";
+        if(st === "🟡 種花中" && !document.getElementById("updStartTime").value) document.getElementById("updStartTime").value = formatISOToLocal(new Date());
+        if(st === "🔴 已種完" && !document.getElementById("updFinishTime").value) document.getElementById("updFinishTime").value = formatISOToLocal(new Date());
+    }
+
+    function setFormReadOnly(isLocked) {
+        isModalLocked = isLocked;
+        const fields = ["updStatus", "updUser", "updFlower", "updFlowerCount", "updStartTime", "updFinishTime"];
+        fields.forEach(id => {
+            document.getElementById(id).disabled = isLocked;
+            if(isLocked) document.getElementById(id).classList.add("locked-field");
+            else document.getElementById(id).classList.remove("locked-field");
+        });
+    }
+
+    function unlockForm() {
+        if (isAdminLoggedIn) {
+            if(confirm("確定要解鎖並修改這個已種完的花田嗎？")) executeUnlock();
+        } else {
+            const pwd = prompt("請輸入管理員密碼以解鎖修改權限：");
+            if(pwd === "adminccfh") executeUnlock();
+            else if (pwd !== null) alert("❌ 密碼錯誤！");
+        }
+    }
+
+    function executeUnlock() {
+        setFormReadOnly(false);
+        document.getElementById("adminUnlockBtn").style.display = "none";
+        document.getElementById("normalActionBtns").style.display = "block";
+    }
+
+    async function submitUpdate() {
+        const status = document.getElementById("updStatus").value;
+        if (status === "🔴 已種完" && !isModalLocked) {
+            if(!confirm("⚠️ 完成種花後將開始倒數重置時間，且無法再進行狀態修改。\n請問確定要送出嗎？")) return;
+        }
+
+        const payload = {
+            action: "updateStatus",
+            country: document.getElementById("updCountry").value, city: document.getElementById("updCity").value, seq: document.getElementById("updSeq").value,
+            status: status, user: document.getElementById("updUser").value || "無", flower: document.getElementById("updFlower").value || "無",
+            flowerCount: document.getElementById("updFlowerCount").value, 
+            startTime: status === "🟡 種花中" ? document.getElementById("updStartTime").value : "",
+            finishTime: status === "🔴 已種完" ? document.getElementById("updFinishTime").value : ""
+        };
+        
+        if(status === "🔴 已種完" && !payload.finishTime) return alert("請填寫完成時間！");
+        
+        document.getElementById("visualSpinner").style.display = "flex";
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        bootstrap.Modal.getInstance(document.getElementById('updateModal')).hide();
+        await loadData();
+    }
+
+    // ==========================================
+    // 自動/手動 智慧解析與建檔
+    // ==========================================
+    function handleGpxChange(event) {
+        if(event.target.files.length > 0) handleManualParse();
+    }
+
+    function handleCoordsPaste() {
+        document.getElementById("gpxFile").value = ""; 
+        setTimeout(() => { handleManualParse(); }, 100);
+    }
+
+    async function handleManualParse() {
+        const fileInput = document.getElementById("gpxFile"), coordsBox = document.getElementById("admCoords"), statusTxt = document.getElementById("gpxStatus");
+        statusTxt.innerText = "⏳ 正在處理中..."; statusTxt.style.color = "#DB7093";
+        let targetLat = "", targetLon = "";
+
+        if (fileInput.files.length > 0) {
+            try {
+                const xmlDoc = new DOMParser().parseFromString(await fileInput.files[0].text(), "text/xml");
+                let pts = Array.from(xmlDoc.getElementsByTagName("trkpt"));
+                if(!pts.length) pts = Array.from(xmlDoc.getElementsByTagName("wpt"));
+                if(!pts.length) pts = Array.from(xmlDoc.getElementsByTagName("rtept"));
+                
+                let coordsArr = [], lastCoord = "";
+                pts.forEach(pt => {
+                    let cur = `${parseFloat(pt.getAttribute("lat")).toFixed(5)},${parseFloat(pt.getAttribute("lon")).toFixed(5)}`;
+                    if(cur !== lastCoord) { coordsArr.push(cur); lastCoord = cur; }
+                });
+                if(coordsArr.length === 0) return statusTxt.innerText = "❌ 檔案中找不到有效座標。";
+                
+                coordsBox.value = coordsArr.join("\n");
+                [targetLat, targetLon] = coordsArr[0].split(',');
+                
+                document.getElementById("admFlowerCount").value = coordsArr.length;
+            } catch(e) { return statusTxt.innerText = "❌ GPX 解析失敗。"; }
+        } else if (coordsBox.value.trim() !== "") {
+            let parts = coordsBox.value.trim().split('\n')[0].split(',');
+            if(parts.length === 2) { 
+                targetLat = parts[0].trim(); targetLon = parts[1].trim(); 
+                let lines = coordsBox.value.trim().split('\n').filter(c => c);
+                document.getElementById("admFlowerCount").value = lines.length;
+            }
+            else return statusTxt.innerText = "❌ 格式錯誤。";
+        } else return statusTxt.innerText = "❌ 請選擇檔案或貼上座標。";
+
+        try {
+            statusTxt.innerText = "⏳ 反查中...";
+            const resEn = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${targetLat}&lon=${targetLon}&accept-language=en`).then(r=>r.json());
+            if (resEn.address) {
+                document.getElementById("admCity").value = resEn.address.city || resEn.address.town || resEn.address.village || resEn.address.state || "";
+                if(resEn.address.country_code) {
+                    try { document.getElementById("admCountry").value = new Intl.DisplayNames(['zh-TW'], { type: 'region' }).of(resEn.address.country_code.toUpperCase()); }
+                    catch(e){ document.getElementById("admCountry").value = resEn.address.country; }
+                }
+                statusTxt.innerText = "🌸 判斷完成！您可以自由修改。"; statusTxt.style.color = "#DB7093";
+            } else statusTxt.innerText = "❌ 查無資訊。";
+        } catch(e) { statusTxt.innerText = "❌ 反查失敗。"; }
+    }
+
+    async function submitAdmin() {
+        const rawCoords = document.getElementById("admCoords").value;
+        const compressedCoords = rawCoords.split('\n').map(c => c.trim()).filter(c => c).join(';');
+        
+        const payload = {
+            action: "addLocation", account: "adminccfh", password: "adminccfh", 
+            country: document.getElementById("admCountry").value, city: document.getElementById("admCity").value,
+            seq: document.getElementById("admSeq").value, coordinates: compressedCoords,
+            flowerCount: document.getElementById("admFlowerCount").value
+        };
+        
+        if(!payload.country || !payload.city || !payload.coordinates) return alert("請填寫所有欄位！");
+        document.getElementById("btnAdminSubmit").disabled = true; document.getElementById("btnAdminSubmit").innerText = "建檔中...";
+        
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
+            if(res.success) {
+                alert("🎉 建檔成功！"); bootstrap.Modal.getInstance(document.getElementById('adminModal')).hide();
+                document.getElementById("admCoords").value = ""; 
+                document.getElementById("admFlowerCount").value = "";
+                document.getElementById("gpxFile").value = "";
+                document.getElementById("gpxStatus").innerText = "";
+                await loadData();
+            } else alert("❌ 失敗：" + res.msg);
+        } catch (e) { alert("連線失敗！"); }
+        document.getElementById("btnAdminSubmit").disabled = false; document.getElementById("btnAdminSubmit").innerText = "建立花田資料";
+    }
+
+    function copyCoords(str) { navigator.clipboard.writeText(str).then(() => alert("✅ 已複製到剪貼簿！")); }
+    function downloadGPX(coordsStr, name) {
+        if(!coordsStr) return;
+        let gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1">\n  <trk>\n    <name>${name}</name>\n    <trkseg>\n`;
+        coordsStr.split(';').filter(p=>p).forEach(c => { const [lat, lon] = c.split(','); gpx += `      <trkpt lat="${lat}" lon="${lon}"></trkpt>\n`; });
+        gpx += `    </trkseg>\n  </trk>\n</gpx>`;
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([gpx], {type: "application/gpx+xml"}));
+        a.download = `花田_${name}.gpx`; a.click();
+    }
+</script>
+</body>
+</html>
