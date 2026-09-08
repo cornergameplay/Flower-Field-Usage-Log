@@ -33,65 +33,45 @@
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 8px 32px 0 rgba(219, 112, 147, 0.1);
-            border-radius: 16px;
-            overflow: hidden;
+            border-radius: 16px; overflow: hidden;
         }
 
-        /* 控制面板置頂懸浮樣式 */
         .sticky-glass-controls {
-            position: sticky;
-            top: 15px; /* 距離頂部一點點，增加質感 */
-            z-index: 1030;
             background: rgba(255, 240, 245, 0.75);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
+            border-radius: 16px; box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
         }
 
         .btn-glass {
-            background: rgba(255, 183, 197, 0.4); 
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            color: #DB7093;
-            font-weight: 600;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(219, 112, 147, 0.08);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 183, 197, 0.4); backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.9); color: #DB7093;
+            font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(219, 112, 147, 0.08);
+            transition: all 0.3s ease;
         }
         .btn-glass:hover:not(:disabled) {
-            background: #FFB7C5; color: #FFF; border-color: #FFB7C5;
-            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
+            background: #FFB7C5; color: #FFF; border-color: #FFB7C5; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
         }
         .btn-glass:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .btn-glass-primary {
-            background: rgba(219, 112, 147, 0.85); 
-            backdrop-filter: blur(4px);
-            border: 1px solid #DB7093;
-            color: #FFF; font-weight: bold; border-radius: 8px; transition: all 0.3s ease;
+            background: rgba(219, 112, 147, 0.85); backdrop-filter: blur(4px);
+            border: 1px solid #DB7093; color: #FFF; font-weight: bold; border-radius: 8px; transition: all 0.3s ease;
         }
-        .btn-glass-primary:hover {
-            background: #DB7093; color: #FFF;
-            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3);
-        }
-
-        .btn-check:checked + .btn-glass-outline { background-color: #DB7093; color: #FFF; border-color: #DB7093; }
-        .btn-glass-outline { background: rgba(255, 255, 255, 0.5); border: 1px solid #FFB7C5; color: #DB7093; backdrop-filter: blur(4px); font-weight: 600; }
-        .btn-glass-outline:hover { background: #FFB7C5; color: #FFF; border-color: #FFB7C5; }
+        .btn-glass-primary:hover { background: #DB7093; color: #FFF; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3); }
 
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(244, 207, 224, 0.9);
-            color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(244, 207, 224, 0.9); color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
         }
         .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.95); border-color: #DB7093; box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15); }
         .locked-field { background-color: rgba(244, 207, 224, 0.3) !important; color: #888; }
+        
+        /* 自訂 Switch 開關為櫻花粉 */
+        .form-check-input:checked { background-color: #DB7093; border-color: #DB7093; }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 20px; box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
+            background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 20px; box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
         }
         .modal-header { border-bottom: 1px solid rgba(244, 207, 224, 0.7); }
         .modal-footer { border-top: 1px solid rgba(244, 207, 224, 0.7); }
@@ -114,49 +94,57 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg mb-4">
+<nav class="navbar navbar-expand-lg mb-3">
     <div class="container-fluid px-4">
-        <a class="navbar-brand" href="#">🌸 皮克敏花田視覺化管理系統</a>
+        <a class="navbar-brand" href="#">🌸 皮克敏花田登記</a>
         <div id="navButtons">
             <button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 管理員建檔</button>
         </div>
     </div>
 </nav>
 
-<div class="container-fluid px-4">
+<div class="container-fluid px-3 px-md-4">
     
-    <!-- 頂部控制面板 (加入 sticky-glass-controls 置頂懸浮樣式) -->
-    <div class="sticky-glass-controls p-3 mb-4">
+    <!-- 電腦版：頂部控制面板 -->
+    <div class="sticky-glass-controls p-3 mb-3 d-none d-md-block">
         <div class="row align-items-end">
-            <div class="col-md-3 mb-2 mb-md-0">
-                <label class="form-label fw-bold" style="color: #DB7093;">分組篩選 (國家-地區)</label>
-                <select class="form-select" id="groupFilter" onchange="applyFilters()">
-                    <option value="ALL">全部花田</option>
-                </select>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-pink" style="color: #DB7093;">分組篩選 (國家-地區)</label>
+                <!-- 電腦版分組 -->
+                <select class="form-select" id="groupFilterDesk" onchange="syncFilters('desk')"></select>
             </div>
-            <div class="col-md-3 mb-2 mb-md-0">
-                <label class="form-label fw-bold" style="color: #DB7093;">狀態篩選</label>
-                <select class="form-select" id="statusFilter" onchange="applyFilters()">
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-pink" style="color: #DB7093;">狀態篩選</label>
+                <!-- ✅ 修復：補回電腦版的狀態選項 -->
+                <select class="form-select" id="statusFilterDesk" onchange="syncFilters('desk')">
                     <option value="ALL">所有狀態</option>
                     <option value="🟢 閒置中">🟢 閒置中</option>
                     <option value="🟡 種花中">🟡 種花中</option>
                     <option value="🔴 已種完">🔴 已種完</option>
                 </select>
             </div>
-            <div class="col-md-6 text-end">
-                <div class="btn-group shadow-sm rounded-3" role="group">
-                    <input type="radio" class="btn-check" name="viewMode" id="modeMap" autocomplete="off" checked onchange="toggleViewMode()">
-                    <label class="btn btn-glass-outline" for="modeMap">🗺️ 真實地圖</label>
-                    <input type="radio" class="btn-check" name="viewMode" id="modeCanvas" autocomplete="off" onchange="toggleViewMode()">
-                    <label class="btn btn-glass-outline" for="modeCanvas">⬜ 白板畫布</label>
+            <div class="col-md-6 d-flex justify-content-end align-items-center">
+                <div class="form-check form-switch me-4 fs-5 mb-0">
+                    <input class="form-check-input shadow-sm" type="checkbox" id="mapToggleDesk" checked onchange="syncFilters('desk')" style="cursor: pointer;">
+                    <label class="form-check-label fw-bold" for="mapToggleDesk" style="color: #DB7093; cursor: pointer;">🗺️ 地圖開關</label>
                 </div>
-                <button class="btn btn-glass shadow-sm ms-2" onclick="loadData()">🔄 重新整理</button>
+                <button class="btn btn-glass shadow-sm px-3 fw-bold fs-5" title="重新整理" onclick="loadData()">🔄</button>
             </div>
         </div>
     </div>
 
-    <!-- 表格區域與分頁控制器 -->
-    <div class="row mb-4">
+    <!-- 展開/收合表格按鈕 (≡) -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <button class="btn btn-glass w-100 fw-bold d-flex justify-content-between align-items-center shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#tableCollapseArea" aria-expanded="true">
+                <span class="fs-6">≡ 展開 / 收合花田清單</span>
+                <span style="font-size: 0.8em;">▼</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 表格區域 (支援收合) -->
+    <div class="row mb-4 collapse show" id="tableCollapseArea">
         <div class="col-12">
             <div class="glass-panel">
                 <div class="table-responsive">
@@ -180,17 +168,18 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
+                <!-- 分頁按鈕區 -->
                 <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(244, 207, 224, 0.5);">
-                    <button class="btn btn-glass btn-sm" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
+                    <button class="btn btn-glass btn-sm px-3 fw-bold" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
                     <span id="pageIndicator" style="color: #DB7093; font-weight: bold;">1 / 1 頁</span>
-                    <button class="btn btn-glass btn-sm" id="nextPageBtn" onclick="changePage(1)">下一頁 ▶</button>
+                    <button class="btn btn-glass btn-sm px-3 fw-bold" id="nextPageBtn" onclick="changePage(1)">下一頁 ▶</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 視覺化區域 -->
-    <div class="row mb-5">
+    <!-- 視覺化地圖區域 -->
+    <div class="row mb-5 pb-5 pb-md-0">
         <div class="col-12">
             <div id="visualArea" class="shadow-sm">
                 <div id="map"></div>
@@ -198,6 +187,51 @@
                 <div class="spinner-overlay" id="visualSpinner">🌸 資料載入中...</div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- 手機版專屬：左下角 🔍 懸浮按鈕 -->
+<button class="btn btn-glass-primary d-md-none shadow-lg d-flex align-items-center justify-content-center" 
+        style="position: fixed; bottom: 25px; left: 20px; z-index: 1050; border-radius: 50%; width: 55px; height: 55px; font-size: 24px;" 
+        data-bs-toggle="offcanvas" data-bs-target="#mobileFiltersPanel">
+    🔍
+</button>
+
+<!-- 手機版：底部彈出控制面板 (Offcanvas) -->
+<div class="offcanvas offcanvas-bottom glass-panel h-auto" tabindex="-1" id="mobileFiltersPanel" style="border-radius: 20px 20px 0 0;">
+    <div class="offcanvas-header sakura-header">
+        <h5 class="offcanvas-title fw-bold">🔍 篩選與地圖設定</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- 篩選器並排 -->
+        <div class="row mb-4">
+            <div class="col-6">
+                <label class="form-label fw-bold" style="color: #DB7093;">分組篩選</label>
+                <!-- 手機版分組 -->
+                <select class="form-select shadow-sm" id="groupFilterMob" onchange="syncFilters('mob')"></select>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-bold" style="color: #DB7093;">狀態</label>
+                <!-- ✅ 修復：補回手機版的狀態選項 -->
+                <select class="form-select shadow-sm" id="statusFilterMob" onchange="syncFilters('mob')">
+                    <option value="ALL">所有狀態</option>
+                    <option value="🟢 閒置中">🟢 閒置中</option>
+                    <option value="🟡 種花中">🟡 種花中</option>
+                    <option value="🔴 已種完">🔴 已種完</option>
+                </select>
+            </div>
+        </div>
+        <!-- 地圖開關與重新整理並排 -->
+        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+            <div class="form-check form-switch fs-4 mb-0">
+                <input class="form-check-input shadow-sm" type="checkbox" id="mapToggleMob" checked onchange="syncFilters('mob')" style="cursor: pointer;">
+                <label class="form-check-label fw-bold" for="mapToggleMob" style="color: #DB7093;">🗺️ 地圖開關</label>
+            </div>
+            <button class="btn btn-glass px-4 fs-5 fw-bold shadow-sm" onclick="loadData(); bootstrap.Offcanvas.getInstance(document.getElementById('mobileFiltersPanel')).hide();">🔄</button>
+        </div>
+        <!-- 明確的收合按鈕 -->
+        <button class="btn btn-glass-primary w-100 fw-bold fs-5 py-2 shadow-sm" data-bs-dismiss="offcanvas">❌ 關閉面板</button>
     </div>
 </div>
 
@@ -410,14 +444,36 @@
     }
 
     // ==========================================
-    // 分頁與渲染表格
+    // 電腦/手機 控制器連動同步
     // ==========================================
+    function syncFilters(source) {
+        let grp, sts, mapMode;
+        if(source === 'desk') {
+            grp = document.getElementById("groupFilterDesk").value;
+            sts = document.getElementById("statusFilterDesk").value;
+            mapMode = document.getElementById("mapToggleDesk").checked;
+            
+            document.getElementById("groupFilterMob").value = grp;
+            document.getElementById("statusFilterMob").value = sts;
+            document.getElementById("mapToggleMob").checked = mapMode;
+        } else {
+            grp = document.getElementById("groupFilterMob").value;
+            sts = document.getElementById("statusFilterMob").value;
+            mapMode = document.getElementById("mapToggleMob").checked;
+            
+            document.getElementById("groupFilterDesk").value = grp;
+            document.getElementById("statusFilterDesk").value = sts;
+            document.getElementById("mapToggleDesk").checked = mapMode;
+        }
+        applyFiltersCore(grp, sts, mapMode);
+    }
+
     async function loadData() {
         document.getElementById("visualSpinner").style.display = "flex";
         try {
             allData = await fetch(API_URL).then(r=>r.json());
             updateGroupDropdown();
-            applyFilters();
+            syncFilters('desk'); // 載入完畢後強制同步與渲染
         } catch (err) { console.error(err); }
         document.getElementById("visualSpinner").style.display = "none";
     }
@@ -425,25 +481,21 @@
     function updateGroupDropdown() {
         const groups = new Set();
         allData.forEach(d => groups.add(`${d.country}-${d.city}`));
-        const sel = document.getElementById("groupFilter");
-        sel.innerHTML = '<option value="ALL">全部花田</option>';
-        groups.forEach(g => sel.innerHTML += `<option value="${g}">${g}</option>`);
+        let html = '<option value="ALL">全部花田</option>';
+        groups.forEach(g => html += `<option value="${g}">${g}</option>`);
+        document.getElementById("groupFilterDesk").innerHTML = html;
+        document.getElementById("groupFilterMob").innerHTML = html;
     }
 
-    function applyFilters() {
-        const grp = document.getElementById("groupFilter").value, sts = document.getElementById("statusFilter").value;
+    function applyFiltersCore(grp, sts, mapMode) {
         currentFilteredData = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
         
         currentPage = 1; 
         renderTable();
-        document.getElementById("modeMap").checked ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
-    }
-
-    function toggleViewMode() {
-        const useMap = document.getElementById("modeMap").checked;
-        document.getElementById("map").style.display = useMap ? "block" : "none";
-        document.getElementById("canvasArea").style.display = useMap ? "none" : "block";
-        document.getElementById("modeMap").checked ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
+        
+        document.getElementById("map").style.display = mapMode ? "block" : "none";
+        document.getElementById("canvasArea").style.display = mapMode ? "none" : "block";
+        mapMode ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
     }
 
     function changePage(delta) {
@@ -454,6 +506,9 @@
         renderTable();
     }
 
+    // ==========================================
+    // 渲染表格
+    // ==========================================
     function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
@@ -474,16 +529,13 @@
             const tr = document.createElement("tr");
             
             tr.innerHTML = `
-                <!-- 修復按鈕點擊：強制將變數轉換為文字型態，避免底層判斷失敗 -->
-                <td><button type="button" class="btn btn-sm btn-glass px-2 py-0" style="font-size:16px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
+                <td><button type="button" class="btn btn-sm btn-glass px-2 py-0 shadow-sm" style="font-size:18px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
                 
                 <td class="d-none d-md-table-cell">${d.country}</td>
                 <td class="d-none d-md-table-cell">${d.city}</td>
-                <td class="d-md-none fw-bold" style="font-size:0.9em; line-height:1.3;">
-                    ${d.country}<br><span class="text-secondary fw-normal">${d.city}</span>
-                </td>
+                <td class="d-md-none fw-bold" style="font-size:0.9em; line-height:1.3;">${d.country}<br><span class="text-secondary fw-normal">${d.city}</span></td>
                 
-                <td>${d.seq}</td>
+                <td class="fw-bold">${d.seq}</td>
                 
                 <td style="color:${colorConfig[d.status]}; font-weight:bold;">
                     <span class="d-md-none fs-5">${statusIcon}</span>
@@ -492,14 +544,14 @@
                 
                 <td>${d.user || '無'}</td>
                 <td>${d.flower || '無'}</td>
-                <td>${d.flowerCount || 0}</td>
+                <td class="fw-bold" style="color: #DB7093;">${d.flowerCount || 0}</td>
                 
                 <td class="d-none d-md-table-cell">${stTime}</td>
                 <td class="d-none d-md-table-cell">${rTime}</td>
                 
                 <td>
-                    <button type="button" class="btn btn-sm btn-glass px-2 py-0" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
-                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 ms-1" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
+                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 shadow-sm" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
+                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 ms-1 shadow-sm" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -537,7 +589,7 @@
                 bounds.extend(poly.getBounds());
             }
         });
-        if (bounds.isValid() && document.getElementById("groupFilter").value !== "ALL") map.fitBounds(bounds, { padding: [30, 30] });
+        if (bounds.isValid() && document.getElementById("groupFilterDesk").value !== "ALL") map.fitBounds(bounds, { padding: [30, 30] });
     }
 
     let currentCanvasPaths = [];
@@ -579,11 +631,8 @@
             const cx = sumX / d.pts.length, cy = sumY / d.pts.length;
             
             ctx.fillStyle = 'rgba(255, 240, 245, 0.85)';
-            ctx.beginPath();
-            ctx.roundRect(cx - textWidth/2 - 6, cy - 12, textWidth + 12, 24, 6);
-            ctx.fill();
-            ctx.strokeStyle = '#FFB7C5'; ctx.lineWidth = 1;
-            ctx.stroke();
+            ctx.beginPath(); ctx.roundRect(cx - textWidth/2 - 6, cy - 12, textWidth + 12, 24, 6); ctx.fill();
+            ctx.strokeStyle = '#FFB7C5'; ctx.lineWidth = 1; ctx.stroke();
             
             ctx.fillStyle = '#4A4A4A'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(textStr, cx, cy);
@@ -599,7 +648,7 @@
             }
         }
     }
-    window.addEventListener('resize', () => { if(document.getElementById("modeCanvas").checked) applyFilters(); });
+    window.addEventListener('resize', () => { syncFilters(document.getElementById("mapToggleDesk").offsetParent !== null ? 'desk' : 'mob'); });
 
     // ==========================================
     // 狀態更新防呆解鎖
@@ -607,12 +656,8 @@
     let isModalLocked = false;
 
     function openUpdateModal(country, city, seq) {
-        // 修復底層判斷：強制將兩者轉為文字比對
-        const t = allData.find(d => String(d.country)===String(country) && String(d.city)===String(city) && String(d.seq)===String(seq));
-        if(!t) {
-            alert("找不到該筆資料，請重新整理網頁！");
-            return;
-        }
+        const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
+        if(!t) { alert("找不到該筆資料，請重新整理！"); return; }
         
         document.getElementById("updateModalTitle").innerText = `管理區塊：${city}${seq}`;
         document.getElementById("updCountry").value = country; 
@@ -624,7 +669,7 @@
         document.getElementById("updFlowerCount").value = t.flowerCount || 0;
         
         let originalCount = t.coordinates ? t.coordinates.split(';').filter(p=>p).length : 0;
-        document.getElementById("updOriginalCoords").innerText = `(原始座標數判斷：${originalCount})`;
+        document.getElementById("updOriginalCoords").innerText = `(原始座標判斷：${originalCount})`;
         
         document.getElementById("updStartTime").value = t.startTime ? formatISOToLocal(t.startTime) : "";
         document.getElementById("updFinishTime").value = t.finishTime ? formatISOToLocal(t.finishTime) : "";
@@ -708,14 +753,8 @@
     // ==========================================
     // 自動/手動 智慧解析與建檔
     // ==========================================
-    function handleGpxChange(event) {
-        if(event.target.files.length > 0) handleManualParse();
-    }
-
-    function handleCoordsPaste() {
-        document.getElementById("gpxFile").value = ""; 
-        setTimeout(() => { handleManualParse(); }, 100);
-    }
+    function handleGpxChange(event) { if(event.target.files.length > 0) handleManualParse(); }
+    function handleCoordsPaste() { document.getElementById("gpxFile").value = ""; setTimeout(() => { handleManualParse(); }, 100); }
 
     async function handleManualParse() {
         const fileInput = document.getElementById("gpxFile"), coordsBox = document.getElementById("admCoords"), statusTxt = document.getElementById("gpxStatus");
@@ -747,8 +786,7 @@
                 targetLat = parts[0].trim(); targetLon = parts[1].trim(); 
                 let lines = coordsBox.value.trim().split('\n').filter(c => c);
                 document.getElementById("admFlowerCount").value = lines.length;
-            }
-            else return statusTxt.innerText = "❌ 格式錯誤。";
+            } else return statusTxt.innerText = "❌ 格式錯誤。";
         } else return statusTxt.innerText = "❌ 請選擇檔案或貼上座標。";
 
         try {
@@ -768,7 +806,6 @@
     async function submitAdmin() {
         const rawCoords = document.getElementById("admCoords").value;
         const compressedCoords = rawCoords.split('\n').map(c => c.trim()).filter(c => c).join(';');
-        
         const payload = {
             action: "addLocation", account: "adminccfh", password: "adminccfh", 
             country: document.getElementById("admCountry").value, city: document.getElementById("admCity").value,
@@ -783,17 +820,15 @@
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
             if(res.success) {
                 alert("🎉 建檔成功！"); bootstrap.Modal.getInstance(document.getElementById('adminModal')).hide();
-                document.getElementById("admCoords").value = ""; 
-                document.getElementById("admFlowerCount").value = "";
-                document.getElementById("gpxFile").value = "";
-                document.getElementById("gpxStatus").innerText = "";
+                document.getElementById("admCoords").value = ""; document.getElementById("admFlowerCount").value = "";
+                document.getElementById("gpxFile").value = ""; document.getElementById("gpxStatus").innerText = "";
                 await loadData();
             } else alert("❌ 失敗：" + res.msg);
         } catch (e) { alert("連線失敗！"); }
         document.getElementById("btnAdminSubmit").disabled = false; document.getElementById("btnAdminSubmit").innerText = "建立花田資料";
     }
 
-    function copyCoords(str) { navigator.clipboard.writeText(str).then(() => alert("✅ 已複製到剪貼簿！")); }
+    function copyCoords(str) { navigator.clipboard.writeText(str).then(() => alert("✅ 已複製！")); }
     function downloadGPX(coordsStr, name) {
         if(!coordsStr) return;
         let gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1">\n  <trk>\n    <name>${name}</name>\n    <trkseg>\n`;
