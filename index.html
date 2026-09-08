@@ -36,8 +36,12 @@
             border-radius: 16px; overflow: hidden;
         }
 
+        /* ✅ 修復：補回控制面板置頂懸浮屬性 */
         .sticky-glass-controls {
-            background: rgba(255, 240, 245, 0.75);
+            position: sticky;
+            top: 15px;
+            z-index: 1030;
+            background: rgba(255, 240, 245, 0.85); /* 稍微調高不透明度，讓底下滾動的文字不會干擾視覺 */
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 16px; box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
@@ -66,7 +70,6 @@
         .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.95); border-color: #DB7093; box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15); }
         .locked-field { background-color: rgba(244, 207, 224, 0.3) !important; color: #888; }
         
-        /* 自訂 Switch 開關為櫻花粉 */
         .form-check-input:checked { background-color: #DB7093; border-color: #DB7093; }
 
         .modal-content {
@@ -81,11 +84,11 @@
         .table { color: #4A4A4A; margin-bottom: 0; }
         .table-light th { 
             background: rgba(255, 240, 245, 0.8) !important; backdrop-filter: blur(8px);
-            color: #DB7093; border-bottom: 2px solid #FFB7C5 !important; font-weight: 700;
+            color: #DB7093; border-bottom: 2px solid #FFB7C5 !important; font-weight: 700; white-space: nowrap;
         }
-        .table td { border-bottom: 1px solid rgba(244, 207, 224, 0.4); }
+        .table td { border-bottom: 1px solid rgba(244, 207, 224, 0.4); white-space: nowrap; vertical-align: middle; }
 
-        #visualArea { height: 500px; width: 100%; border: 2px solid rgba(255,255,255,0.9); border-radius: 16px; overflow: hidden; position: relative; background: rgba(255,255,255,0.4); }
+        #visualArea { height: 500px; width: 100%; border: 2px solid rgba(255,255,255,0.9); border-radius: 16px; overflow: hidden; position: relative; background: rgba(255,255,255,0.4); z-index: 1; }
         #map { height: 100%; width: 100%; }
         #canvasArea { height: 100%; width: 100%; display: none; cursor: pointer; }
         .spinner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 240, 245, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; color: #DB7093; display: none; border-radius: 16px; }
@@ -110,12 +113,10 @@
         <div class="row align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-bold text-pink" style="color: #DB7093;">分組篩選 (國家-地區)</label>
-                <!-- 電腦版分組 -->
                 <select class="form-select" id="groupFilterDesk" onchange="syncFilters('desk')"></select>
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-bold text-pink" style="color: #DB7093;">狀態篩選</label>
-                <!-- ✅ 修復：補回電腦版的狀態選項 -->
                 <select class="form-select" id="statusFilterDesk" onchange="syncFilters('desk')">
                     <option value="ALL">所有狀態</option>
                     <option value="🟢 閒置中">🟢 閒置中</option>
@@ -160,15 +161,14 @@
                                 <th>使用人</th>
                                 <th>種植花朵</th>
                                 <th>花朵數</th>
-                                <th class="d-none d-md-table-cell">開始時間</th>
-                                <th class="d-none d-md-table-cell">重置時間</th>
+                                <th>開始時間</th>
+                                <th>重置時間</th>
                                 <th>操作 / 下載</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <!-- 分頁按鈕區 -->
                 <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(244, 207, 224, 0.5);">
                     <button class="btn btn-glass btn-sm px-3 fw-bold" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
                     <span id="pageIndicator" style="color: #DB7093; font-weight: bold;">1 / 1 頁</span>
@@ -203,17 +203,14 @@
         <h5 class="offcanvas-title fw-bold">🔍 篩選與地圖設定</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body">
-        <!-- 篩選器並排 -->
+    <div class="offcanvas-body pb-4">
         <div class="row mb-4">
             <div class="col-6">
                 <label class="form-label fw-bold" style="color: #DB7093;">分組篩選</label>
-                <!-- 手機版分組 -->
                 <select class="form-select shadow-sm" id="groupFilterMob" onchange="syncFilters('mob')"></select>
             </div>
             <div class="col-6">
                 <label class="form-label fw-bold" style="color: #DB7093;">狀態</label>
-                <!-- ✅ 修復：補回手機版的狀態選項 -->
                 <select class="form-select shadow-sm" id="statusFilterMob" onchange="syncFilters('mob')">
                     <option value="ALL">所有狀態</option>
                     <option value="🟢 閒置中">🟢 閒置中</option>
@@ -222,16 +219,13 @@
                 </select>
             </div>
         </div>
-        <!-- 地圖開關與重新整理並排 -->
-        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <div class="d-flex justify-content-between align-items-center px-2">
             <div class="form-check form-switch fs-4 mb-0">
                 <input class="form-check-input shadow-sm" type="checkbox" id="mapToggleMob" checked onchange="syncFilters('mob')" style="cursor: pointer;">
                 <label class="form-check-label fw-bold" for="mapToggleMob" style="color: #DB7093;">🗺️ 地圖開關</label>
             </div>
             <button class="btn btn-glass px-4 fs-5 fw-bold shadow-sm" onclick="loadData(); bootstrap.Offcanvas.getInstance(document.getElementById('mobileFiltersPanel')).hide();">🔄</button>
         </div>
-        <!-- 明確的收合按鈕 -->
-        <button class="btn btn-glass-primary w-100 fw-bold fs-5 py-2 shadow-sm" data-bs-dismiss="offcanvas">❌ 關閉面板</button>
     </div>
 </div>
 
@@ -267,17 +261,27 @@
                     <label class="form-label fw-bold">花朵數 <span id="updOriginalCoords" class="text-secondary fw-normal ms-1" style="font-size: 0.85em;">(座標數判斷：0)</span></label>
                     <input type="number" class="form-control" id="updFlowerCount" min="0">
                 </div>
+                
                 <div class="mb-3" id="startTimeContainer" style="display: none;">
                     <label class="form-label text-warning fw-bold">開始時間 (種花中)</label>
                     <input type="datetime-local" class="form-control" id="updStartTime">
                 </div>
+                
+                <!-- 已種完 時間區塊 -->
                 <div class="mb-3" id="finishTimeContainer" style="display: none;">
-                    <label class="form-label fw-bold" style="color:#c62828;">完成時間 (將倒數23H重置)</label>
-                    <input type="datetime-local" class="form-control" id="updFinishTime">
+                    <div id="finishTimeInputWrapper">
+                        <label class="form-label fw-bold" style="color:#c62828;">完成時間</label>
+                        <input type="datetime-local" class="form-control" id="updFinishTime">
+                    </div>
+                    
+                    <div id="resetTimeDisplayWrapper" class="mt-2 text-center" style="display: none; background: rgba(255,183,197,0.3); border-radius: 8px; padding: 12px; border: 1px dashed #DB7093;">
+                        <span style="color:#c62828; font-weight:bold; font-size:1.1em;">⏳ 重置時間：</span><br>
+                        <span id="lockedResetTimeStr" style="font-weight:bold; font-size:1.3em; color:#4A4A4A; letter-spacing: 1px;">--/-- --:--</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-outline-danger btn-sm fw-bold border-0 bg-transparent" id="adminUnlockBtn" onclick="unlockForm()" style="display: none; color:#c62828;">🔓 解鎖修改</button>
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold border-0 bg-transparent" id="adminUnlockBtn" onclick="executeUnlock()" style="display: none; color:#c62828;">🔓 解鎖修改</button>
                 <div class="w-100 text-end" id="normalActionBtns">
                     <button type="button" class="btn btn-glass" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-glass-primary ms-2" onclick="submitUpdate()">確認更新</button>
@@ -315,7 +319,7 @@
             <div class="modal-body">
                 <div class="alert" style="background: rgba(255, 183, 197, 0.3); border: 1px solid #FFB7C5; border-radius: 12px;">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span style="color: #DB7093;"><strong>智慧讀取：</strong>匯入檔案或貼上座標會自動判斷；若需重新判斷請按右方按鈕。</span>
+                        <span style="color: #DB7093;"><strong>智慧讀取：</strong>匯入檔案或貼上座標會自動判斷。</span>
                         <button class="btn btn-glass btn-sm fw-bold shadow-sm" onclick="handleManualParse()">🔄 重新解析</button>
                     </div>
                 </div>
@@ -351,8 +355,8 @@
     let map = null;
     let polygonLayers = [];
     let isAdminLoggedIn = false;
+    let isModalLocked = false;
     
-    // 分頁控制變數
     let currentPage = 1;
     const itemsPerPage = 20;
     
@@ -473,26 +477,33 @@
         try {
             allData = await fetch(API_URL).then(r=>r.json());
             updateGroupDropdown();
-            syncFilters('desk'); // 載入完畢後強制同步與渲染
+            syncFilters('desk'); 
         } catch (err) { console.error(err); }
         document.getElementById("visualSpinner").style.display = "none";
     }
 
     function updateGroupDropdown() {
+        // 記憶當前選項
+        const currentGroup = document.getElementById("groupFilterDesk").value;
+
         const groups = new Set();
         allData.forEach(d => groups.add(`${d.country}-${d.city}`));
         let html = '<option value="ALL">全部花田</option>';
         groups.forEach(g => html += `<option value="${g}">${g}</option>`);
+        
         document.getElementById("groupFilterDesk").innerHTML = html;
         document.getElementById("groupFilterMob").innerHTML = html;
+
+        // 恢復記憶選項
+        if (currentGroup && (groups.has(currentGroup) || currentGroup === "ALL")) {
+            document.getElementById("groupFilterDesk").value = currentGroup;
+            document.getElementById("groupFilterMob").value = currentGroup;
+        }
     }
 
     function applyFiltersCore(grp, sts, mapMode) {
         currentFilteredData = allData.filter(d => (grp === "ALL" || `${d.country}-${d.city}` === grp) && (sts === "ALL" || d.status === sts));
-        
-        currentPage = 1; 
         renderTable();
-        
         document.getElementById("map").style.display = mapMode ? "block" : "none";
         document.getElementById("canvasArea").style.display = mapMode ? "none" : "block";
         mapMode ? renderMap(currentFilteredData) : renderCanvas(currentFilteredData);
@@ -507,13 +518,15 @@
     }
 
     // ==========================================
-    // 渲染表格
+    // 渲染表格 
     // ==========================================
     function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
         
         const totalPages = Math.ceil(currentFilteredData.length / itemsPerPage) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        
         document.getElementById("pageIndicator").innerText = `${currentPage} / ${totalPages} 頁`;
         document.getElementById("prevPageBtn").disabled = (currentPage === 1);
         document.getElementById("nextPageBtn").disabled = (currentPage === totalPages);
@@ -546,8 +559,8 @@
                 <td>${d.flower || '無'}</td>
                 <td class="fw-bold" style="color: #DB7093;">${d.flowerCount || 0}</td>
                 
-                <td class="d-none d-md-table-cell">${stTime}</td>
-                <td class="d-none d-md-table-cell">${rTime}</td>
+                <td>${stTime}</td>
+                <td>${rTime}</td>
                 
                 <td>
                     <button type="button" class="btn btn-sm btn-glass px-2 py-0 shadow-sm" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
@@ -651,10 +664,8 @@
     window.addEventListener('resize', () => { syncFilters(document.getElementById("mapToggleDesk").offsetParent !== null ? 'desk' : 'mob'); });
 
     // ==========================================
-    // 狀態更新防呆解鎖
+    // 狀態更新防呆解鎖 (完美 3 情境切換)
     // ==========================================
-    let isModalLocked = false;
-
     function openUpdateModal(country, city, seq) {
         const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
         if(!t) { alert("找不到該筆資料，請重新整理！"); return; }
@@ -680,10 +691,17 @@
             setFormReadOnly(true);
             document.getElementById("adminUnlockBtn").style.display = "block";
             document.getElementById("normalActionBtns").style.display = "none";
+            
+            document.getElementById("finishTimeInputWrapper").style.display = "none";
+            document.getElementById("resetTimeDisplayWrapper").style.display = "block";
+            document.getElementById("lockedResetTimeStr").innerText = t.finishTime ? calcResetTime(t.finishTime) : "無";
         } else {
             setFormReadOnly(false);
             document.getElementById("adminUnlockBtn").style.display = "none";
             document.getElementById("normalActionBtns").style.display = "block";
+            
+            document.getElementById("finishTimeInputWrapper").style.display = "block";
+            document.getElementById("resetTimeDisplayWrapper").style.display = "none";
         }
         
         new bootstrap.Modal(document.getElementById('updateModal')).show();
@@ -697,8 +715,14 @@
         const st = document.getElementById("updStatus").value;
         document.getElementById("startTimeContainer").style.display  = (st === "🟡 種花中") ? "block" : "none";
         document.getElementById("finishTimeContainer").style.display = (st === "🔴 已種完") ? "block" : "none";
+        
         if(st === "🟡 種花中" && !document.getElementById("updStartTime").value) document.getElementById("updStartTime").value = formatISOToLocal(new Date());
         if(st === "🔴 已種完" && !document.getElementById("updFinishTime").value) document.getElementById("updFinishTime").value = formatISOToLocal(new Date());
+
+        if (!isModalLocked) {
+            document.getElementById("finishTimeInputWrapper").style.display = "block";
+            document.getElementById("resetTimeDisplayWrapper").style.display = "none";
+        }
     }
 
     function setFormReadOnly(isLocked) {
@@ -711,20 +735,28 @@
         });
     }
 
-    function unlockForm() {
+    function executeUnlock() {
         if (isAdminLoggedIn) {
-            if(confirm("確定要解鎖並修改這個已種完的花田嗎？")) executeUnlock();
+            if(confirm("確定要解鎖並修改這個已種完的花田嗎？")) {
+                doUnlock();
+            }
         } else {
             const pwd = prompt("請輸入管理員密碼以解鎖修改權限：");
-            if(pwd === "adminccfh") executeUnlock();
-            else if (pwd !== null) alert("❌ 密碼錯誤！");
+            if(pwd === "adminccfh") {
+                doUnlock();
+            } else if (pwd !== null) {
+                alert("❌ 密碼錯誤！");
+            }
         }
     }
 
-    function executeUnlock() {
+    function doUnlock() {
         setFormReadOnly(false);
         document.getElementById("adminUnlockBtn").style.display = "none";
         document.getElementById("normalActionBtns").style.display = "block";
+        
+        document.getElementById("finishTimeInputWrapper").style.display = "block";
+        document.getElementById("resetTimeDisplayWrapper").style.display = "none";
     }
 
     async function submitUpdate() {
