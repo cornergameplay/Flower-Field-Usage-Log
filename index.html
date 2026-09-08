@@ -36,12 +36,11 @@
             border-radius: 16px; overflow: hidden;
         }
 
-        /* ✅ 修復：補回控制面板置頂懸浮屬性 */
         .sticky-glass-controls {
             position: sticky;
             top: 15px;
             z-index: 1030;
-            background: rgba(255, 240, 245, 0.85); /* 稍微調高不透明度，讓底下滾動的文字不會干擾視覺 */
+            background: rgba(255, 240, 245, 0.85); 
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 16px; box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
@@ -190,9 +189,12 @@
     </div>
 </div>
 
-<!-- 手機版專屬：左下角 🔍 懸浮按鈕 -->
+<!-- 
+    手機版專屬：左下角 🔍 懸浮按鈕 
+    ✅ 已將 z-index 降至 1030。這樣 Offcanvas(1045) 與背景暗層(1040) 彈出時，這個按鈕會自動被蓋住隱藏。
+-->
 <button class="btn btn-glass-primary d-md-none shadow-lg d-flex align-items-center justify-content-center" 
-        style="position: fixed; bottom: 25px; left: 20px; z-index: 1050; border-radius: 50%; width: 55px; height: 55px; font-size: 24px;" 
+        style="position: fixed; bottom: 25px; left: 20px; z-index: 1030; border-radius: 50%; width: 55px; height: 55px; font-size: 24px;" 
         data-bs-toggle="offcanvas" data-bs-target="#mobileFiltersPanel">
     🔍
 </button>
@@ -203,7 +205,8 @@
         <h5 class="offcanvas-title fw-bold">🔍 篩選與地圖設定</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body pb-4">
+    <!-- 增加底部 padding (pb-5) 確保內容絕對不會擁擠 -->
+    <div class="offcanvas-body pb-5">
         <div class="row mb-4">
             <div class="col-6">
                 <label class="form-label fw-bold" style="color: #DB7093;">分組篩選</label>
@@ -483,7 +486,6 @@
     }
 
     function updateGroupDropdown() {
-        // 記憶當前選項
         const currentGroup = document.getElementById("groupFilterDesk").value;
 
         const groups = new Set();
@@ -494,7 +496,6 @@
         document.getElementById("groupFilterDesk").innerHTML = html;
         document.getElementById("groupFilterMob").innerHTML = html;
 
-        // 恢復記憶選項
         if (currentGroup && (groups.has(currentGroup) || currentGroup === "ALL")) {
             document.getElementById("groupFilterDesk").value = currentGroup;
             document.getElementById("groupFilterMob").value = currentGroup;
