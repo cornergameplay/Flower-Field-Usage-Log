@@ -580,6 +580,7 @@
             
             const tr = document.createElement("tr");
             
+            // ✅ 更新下載按鈕參數：傳遞完整資訊，結合為「國家_地區_序號_花朵數」
             tr.innerHTML = `
                 <td><button type="button" class="btn btn-sm btn-glass px-2 py-0 shadow-sm" style="font-size:18px;" onclick="openUpdateModal('${d.country}','${d.city}','${d.seq}')">📝</button></td>
                 
@@ -603,7 +604,7 @@
                 
                 <td>
                     <button type="button" class="btn btn-sm btn-glass px-2 py-0 shadow-sm" style="font-size:14px;" onclick="copyCoords('${d.coordinates}')">📋</button>
-                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 ms-1 shadow-sm" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.city}_${d.seq}')">📥</button>
+                    <button type="button" class="btn btn-sm btn-glass px-2 py-0 ms-1 shadow-sm" style="font-size:14px;" onclick="downloadGPX('${d.coordinates}','${d.country}_${d.city}_${d.seq}_${d.flowerCount || 0}')">📥</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -703,7 +704,7 @@
     window.addEventListener('resize', () => { syncFilters(document.getElementById("mapToggleDesk").offsetParent !== null ? 'desk' : 'mob'); });
 
     // ==========================================
-    // 狀態更新防呆解鎖 (完美 3 情境切換)
+    // 狀態更新防呆解鎖
     // ==========================================
     function openUpdateModal(country, city, seq) {
         const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
@@ -882,7 +883,6 @@
         try {
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
             if(res.success) {
-                // ✅ 修改：建檔成功後不關閉視窗，僅清空座標與數量，方便連續新增
                 alert("🎉 建檔成功！您可以繼續新增下一筆。"); 
                 document.getElementById("admCoords").value = ""; 
                 document.getElementById("admFlowerCount").value = "";
@@ -895,13 +895,30 @@
     }
 
     function copyCoords(str) { navigator.clipboard.writeText(str).then(() => alert("✅ 已複製！")); }
-    function downloadGPX(coordsStr, name) {
+    
+    // ✅ 彈出視窗讓使用者確認與修改檔名
+    function downloadGPX(coordsStr, defaultName) {
         if(!coordsStr) return;
-        let gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1">\n  <trk>\n    <name>${name}</name>\n    <trkseg>\n`;
-        coordsStr.split(';').filter(p=>p).forEach(c => { const [lat, lon] = c.split(','); gpx += `      <trkpt lat="${lat}" lon="${lon}"></trkpt>\n`; });
+        
+        let finalName = prompt("請確認或修改下載的檔案名稱：", defaultName);
+        
+        // 如果使用者按下取消，或是清空檔名，則中止下載
+        if (finalName === null || finalName.trim() === "") return;
+        finalName = finalName.trim();
+        
+        let gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1">\n  <trk>\n    <name>${finalName}</name>\n    <trkseg>\n`;
+        coordsStr.split(';').filter(p=>p).forEach(c => { 
+            const [lat, lon] = c.split(','); 
+            gpx += `      <trkpt lat="${lat}" lon="${lon}"></trkpt>\n`; 
+        });
         gpx += `    </trkseg>\n  </trk>\n</gpx>`;
-        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([gpx], {type: "application/gpx+xml"}));
-        a.download = `花田_${name}.gpx`; a.click();
+        
+        const a = document.createElement("a"); 
+        a.href = URL.createObjectURL(new Blob([gpx], {type: "application/gpx+xml"}));
+        
+        // 確保副檔名為 .gpx
+        a.download = finalName.endsWith(".gpx") ? finalName : `${finalName}.gpx`; 
+        a.click();
     }
 </script>
 </body>
