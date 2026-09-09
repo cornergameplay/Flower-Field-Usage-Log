@@ -199,7 +199,7 @@
     </div>
 </div>
 
-<!-- 手機版專屬：左下角 🔍 懸浮按鈕 (z-index 1030) -->
+<!-- 手機版專屬：左下角 🔍 懸浮按鈕 -->
 <button class="btn btn-glass-primary d-md-none shadow-lg d-flex align-items-center justify-content-center" 
         style="position: fixed; bottom: 25px; left: 20px; z-index: 1030; border-radius: 50%; width: 55px; height: 55px; font-size: 24px;" 
         data-bs-toggle="offcanvas" data-bs-target="#mobileFiltersPanel">
@@ -238,7 +238,7 @@
     </div>
 </div>
 
-<!-- 狀態更新 Modal (管理區塊) -->
+<!-- 狀態更新 Modal -->
 <div class="modal fade" id="updateModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -267,7 +267,6 @@
                         <input type="text" class="form-control" id="updFlower" placeholder="例如：紅玫瑰">
                     </div>
                 </div>
-                <!-- 顯示不可修改的建田者 -->
                 <div class="row mb-3">
                     <div class="col-6">
                         <label class="form-label fw-bold">花朵數 <span id="updOriginalCoords" class="text-secondary fw-normal ms-1" style="font-size: 0.85em;">(座標數：0)</span></label>
@@ -348,7 +347,6 @@
                 </div>
                 <hr style="border-color: #F4CFE0;">
                 
-                <!-- 建檔欄位：加入建田者且結合 datalist -->
                 <div class="row">
                     <div class="col-md-2 mb-3">
                         <label class="form-label fw-bold">建田者</label>
@@ -383,7 +381,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    // ✅ 更新後的專屬部署網址
     const API_URL = "https://script.google.com/macros/s/AKfycbwANvMELXU7-oTiSnylU02YuRwet62s4U8z5jDNGddbMs5QmQpAhsOjdg40GlJpscQbJg/exec";
     
     let allData = [];
@@ -409,6 +406,15 @@
 
         fpStart = flatpickr("#updStartTime", { enableTime: true, time_24hr: true, dateFormat: "Y/m/d H:i" });
         fpFinish = flatpickr("#updFinishTime", { enableTime: true, time_24hr: true, dateFormat: "Y/m/d H:i" });
+    });
+
+    // ✅ 解決滑動跳頁：只在「寬度改變」時才重整畫面，略過手機滑動造成的單純高度變更
+    let lastWindowWidth = window.innerWidth;
+    window.addEventListener('resize', () => { 
+        if (window.innerWidth !== lastWindowWidth) {
+            lastWindowWidth = window.innerWidth;
+            syncFilters(document.getElementById("mapToggleDesk").offsetParent !== null ? 'desk' : 'mob'); 
+        }
     });
 
     function formatShortTime(isoStr) {
@@ -698,10 +704,9 @@
             }
         }
     }
-    window.addEventListener('resize', () => { syncFilters(document.getElementById("mapToggleDesk").offsetParent !== null ? 'desk' : 'mob'); });
 
     // ==========================================
-    // 狀態更新防呆解鎖
+    // 狀態更新防呆解鎖 (完美 3 情境切換)
     // ==========================================
     function openUpdateModal(country, city, seq) {
         const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
