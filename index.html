@@ -64,7 +64,8 @@
             background: rgba(219, 112, 147, 0.85); backdrop-filter: blur(4px);
             border: 1px solid #DB7093; color: #FFF; font-weight: bold; border-radius: 8px; transition: all 0.3s ease;
         }
-        .btn-glass-primary:hover { background: #DB7093; color: #FFF; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3); }
+        .btn-glass-primary:hover:not(:disabled) { background: #DB7093; color: #FFF; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3); }
+        .btn-glass-primary:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .form-control, .form-select {
             background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(244, 207, 224, 0.9); color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
@@ -109,8 +110,8 @@
 <nav class="navbar navbar-expand-lg mb-3">
     <div class="container-fluid px-4">
         <a class="navbar-brand" href="#">🌸 皮克敏花田登記</a>
-        <div id="navButtons">
-            <button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 管理員建檔</button>
+        <div id="navButtons" class="d-flex align-items-center">
+            <button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 系統登入</button>
         </div>
     </div>
 </nav>
@@ -286,12 +287,10 @@
                 
                 <!-- 🔴 已種完 時間區塊 -->
                 <div class="mb-3" id="finishTimeContainer" style="display: none;">
-                    <!-- 輸入模式 -->
                     <div id="finishTimeInputWrapper">
                         <label class="form-label fw-bold" style="color:#c62828;">完成時間</label>
                         <input type="text" class="form-control bg-white" id="updFinishTime" placeholder="點擊選擇時間">
                     </div>
-                    <!-- 觀看模式 -->
                     <div id="resetTimeDisplayWrapper" class="mt-2 text-center" style="display: none; background: rgba(255,183,197,0.3); border-radius: 8px; padding: 12px; border: 1px dashed #DB7093;">
                         <span style="color:#c62828; font-weight:bold; font-size:1.1em;">⏳ 重置時間：</span><br>
                         <span id="lockedResetTimeStr" style="font-weight:bold; font-size:1.3em; color:#4A4A4A; letter-spacing: 1px;">--/-- --:--</span>
@@ -309,24 +308,24 @@
     </div>
 </div>
 
-<!-- 管理員登入 Modal -->
+<!-- 登入 Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header rose-header">
-                <h5 class="modal-title">🔐 管理員登入</h5>
+                <h5 class="modal-title">🔐 系統登入</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3"><label class="form-label fw-bold">帳號</label><input type="text" class="form-control" id="loginAcc"></div>
                 <div class="mb-3"><label class="form-label fw-bold">密碼</label><input type="password" class="form-control" id="loginPwd"></div>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-glass-primary w-100" onclick="verifyLogin()">登入</button></div>
+            <div class="modal-footer"><button type="button" class="btn btn-glass-primary w-100" id="btnLogin" onclick="verifyLogin()">登入</button></div>
         </div>
     </div>
 </div>
 
-<!-- 管理員建檔 Modal -->
+<!-- 建立花田 Modal -->
 <div class="modal fade" id="adminModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -350,7 +349,7 @@
                 <div class="row">
                     <div class="col-md-2 mb-3">
                         <label class="form-label fw-bold">建田者</label>
-                        <input class="form-control" list="creatorOptions" id="admCreator" placeholder="點擊或輸入">
+                        <input class="form-control" list="creatorOptions" id="admCreator" placeholder="點選或輸入">
                         <datalist id="creatorOptions">
                             <option value="Corn"></option>
                             <option value="Ht"></option>
@@ -381,15 +380,20 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwANvMELXU7-oTiSnylU02YuRwet62s4U8z5jDNGddbMs5QmQpAhsOjdg40GlJpscQbJg/exec";
+    // ✅ 您的專屬部署網址
+    const API_URL = "https://script.google.com/macros/s/AKfycbwOMpVPj70K-0zc3NtvJXsYXQPV8J0ArxW60UkNugdQ5RXoYwGxWNDiqqQlg3U-Q2_4kg/exec";
     
     let allData = [];
     let currentFilteredData = [];
     let map = null;
     let polygonLayers = [];
-    let isAdminLoggedIn = false;
-    let isModalLocked = false;
     
+    let isAdminLoggedIn = false;
+    let adminRole = ''; // 'super' 或是 'builder'
+    let adminAcc = '';
+    let adminPwd = '';
+    
+    let isModalLocked = false;
     let fpStart, fpFinish;
     let currentPage = 1;
     const itemsPerPage = 20;
@@ -408,7 +412,6 @@
         fpFinish = flatpickr("#updFinishTime", { enableTime: true, time_24hr: true, dateFormat: "Y/m/d H:i" });
     });
 
-    // ✅ 解決滑動跳頁：只在「寬度改變」時才重整畫面，略過手機滑動造成的單純高度變更
     let lastWindowWidth = window.innerWidth;
     window.addEventListener('resize', () => { 
         if (window.innerWidth !== lastWindowWidth) {
@@ -459,35 +462,79 @@
     }
 
     // ==========================================
-    // 登入狀態管理
+    // 登入狀態管理 (✅ 改為從後端動態查核)
     // ==========================================
     function checkLoginStatus() {
         if(sessionStorage.getItem('admin_logged_in') === 'true') {
             isAdminLoggedIn = true;
+            adminRole = sessionStorage.getItem('admin_role');
+            adminAcc = sessionStorage.getItem('admin_acc');
+            adminPwd = sessionStorage.getItem('admin_pwd');
             renderAdminNav();
         }
     }
 
-    function verifyLogin() {
-        if(document.getElementById('loginAcc').value === 'adminccfh' && document.getElementById('loginPwd').value === 'adminccfh') {
-            sessionStorage.setItem('admin_logged_in', 'true');
-            isAdminLoggedIn = true;
-            bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-            document.getElementById('loginAcc').value = ''; document.getElementById('loginPwd').value = '';
-            renderAdminNav();
-            new bootstrap.Modal(document.getElementById('adminModal')).show();
-        } else alert('❌ 帳號或密碼錯誤！');
+    async function verifyLogin() {
+        const acc = document.getElementById('loginAcc').value;
+        const pwd = document.getElementById('loginPwd').value;
+        
+        if (!acc || !pwd) {
+            alert('❌ 請輸入帳號與密碼！');
+            return;
+        }
+
+        const loginBtn = document.getElementById('btnLogin');
+        const originalText = loginBtn.innerText;
+        loginBtn.innerText = "驗證中...";
+        loginBtn.disabled = true;
+
+        try {
+            const payload = { action: "login", account: acc, password: pwd };
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
+            
+            if(res.success) {
+                const role = res.role; // 接收權限 (super 或 builder)
+                
+                sessionStorage.setItem('admin_logged_in', 'true');
+                sessionStorage.setItem('admin_role', role);
+                sessionStorage.setItem('admin_acc', acc);
+                sessionStorage.setItem('admin_pwd', pwd);
+                
+                isAdminLoggedIn = true;
+                adminRole = role; adminAcc = acc; adminPwd = pwd;
+                
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                document.getElementById('loginAcc').value = ''; document.getElementById('loginPwd').value = '';
+                renderAdminNav();
+                new bootstrap.Modal(document.getElementById('adminModal')).show();
+            } else {
+                alert('❌ ' + (res.msg || '帳號或密碼錯誤！'));
+            }
+        } catch (e) {
+            alert('❌ 網路連線錯誤，請稍後再試！');
+        }
+        
+        loginBtn.innerText = originalText;
+        loginBtn.disabled = false;
     }
 
     function logoutAdmin() {
         sessionStorage.removeItem('admin_logged_in');
+        sessionStorage.removeItem('admin_role');
+        sessionStorage.removeItem('admin_acc');
+        sessionStorage.removeItem('admin_pwd');
+        
         isAdminLoggedIn = false;
-        alert("已成功登出管理員身分。");
-        document.getElementById('navButtons').innerHTML = `<button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 管理員建檔</button>`;
+        adminRole = ''; adminAcc = ''; adminPwd = '';
+        
+        alert("已成功登出。");
+        document.getElementById('navButtons').innerHTML = `<button class="btn btn-glass btn-sm px-3" data-bs-toggle="modal" data-bs-target="#loginModal">⚙️ 系統登入</button>`;
     }
 
     function renderAdminNav() {
+        let roleLabel = (adminRole === 'super') ? '👑 超級管理員' : '👷 建田專員';
         document.getElementById('navButtons').innerHTML = `
+            <span class="text-pink fw-bold me-3 d-none d-md-inline" style="color:#DB7093;">${roleLabel}</span>
             <button class="btn btn-glass-primary btn-sm me-2 px-3" onclick="new bootstrap.Modal(document.getElementById('adminModal')).show()">⚙️ 新增花田</button>
             <button class="btn btn-glass btn-sm px-3" onclick="logoutAdmin()">🚪 登出</button>
         `;
@@ -706,7 +753,7 @@
     }
 
     // ==========================================
-    // 狀態更新防呆解鎖 (完美 3 情境切換)
+    // 狀態更新防呆解鎖
     // ==========================================
     function openUpdateModal(country, city, seq) {
         const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
@@ -776,12 +823,12 @@
     }
 
     function executeUnlock() {
-        if (isAdminLoggedIn) {
+        if (isAdminLoggedIn && adminRole === 'super') {
             if(confirm("確定要解鎖並修改這個已種完的花田嗎？")) { doUnlock(); }
         } else {
-            const pwd = prompt("請輸入管理員密碼以解鎖修改權限：");
+            const pwd = prompt("請輸入超級管理員密碼以解鎖修改權限：");
             if(pwd === "adminccfh") { doUnlock(); }
-            else if (pwd !== null) { alert("❌ 密碼錯誤！"); }
+            else if (pwd !== null) { alert("❌ 密碼錯誤！權限不足。"); }
         }
     }
 
@@ -874,9 +921,13 @@
         const rawCoords = document.getElementById("admCoords").value;
         const compressedCoords = rawCoords.split('\n').map(c => c.trim()).filter(c => c).join(';');
         const payload = {
-            action: "addLocation", account: "adminccfh", password: "adminccfh", 
-            country: document.getElementById("admCountry").value, city: document.getElementById("admCity").value,
-            seq: document.getElementById("admSeq").value, coordinates: compressedCoords,
+            action: "addLocation", 
+            account: adminAcc, 
+            password: adminPwd, 
+            country: document.getElementById("admCountry").value, 
+            city: document.getElementById("admCity").value,
+            seq: document.getElementById("admSeq").value, 
+            coordinates: compressedCoords,
             flowerCount: document.getElementById("admFlowerCount").value,
             creator: document.getElementById("admCreator").value
         };
