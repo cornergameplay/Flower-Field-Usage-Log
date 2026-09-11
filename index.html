@@ -8,101 +8,147 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Leaflet 地圖 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- 🌸 Flatpickr 時間選擇器樣式 -->
+    <!-- 🌸 Flatpickr 時間選擇器 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- 🖋️ 導入 Noto Sans TC 細緻字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <style>
         /* ==========================================
-           🌸 櫻花毛玻璃 (Glassmorphism) 全局設計
+           🌌 頂級流體網格漸層 & 極致空氣毛玻璃 (Mesh Gradient & True Glassmorphism)
         ========================================== */
         body { 
-            background-color: #FFF0F5;
+            /* 以迷霧石板藍為基底的網格漸層，加入櫻花藕粉，創造極具層次的光影交界 */
+            background-color: #6B7A94; 
             background-image: 
-                radial-gradient(circle at 10% 10%, rgba(244, 207, 224, 0.7) 0%, transparent 50%),
-                radial-gradient(circle at 90% 90%, rgba(255, 183, 197, 0.6) 0%, transparent 50%);
+                radial-gradient(at 10% 20%, rgba(164, 181, 196, 0.8) 0px, transparent 50%),
+                radial-gradient(at 80% 10%, rgba(226, 182, 193, 0.8) 0px, transparent 50%),
+                radial-gradient(at 20% 90%, rgba(216, 167, 177, 0.7) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(118, 137, 169, 0.9) 0px, transparent 50%);
             background-attachment: fixed;
-            color: #4A4A4A; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            
+            color: #2c3e50; 
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-weight: 400; 
+            position: relative;
+            min-height: 100vh;
+            z-index: 0;
+            overflow-x: hidden;
+            letter-spacing: 0.6px; /* 增加呼吸感 */
         }
-        
-        .navbar { 
-            background: rgba(255, 255, 255, 0.45) !important; 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 4px 20px rgba(219, 112, 147, 0.05);
-        }
-        .navbar-brand { font-weight: 800; color: #DB7093 !important; letter-spacing: 1px; }
 
+        /* 💡 緩慢漂浮的光暈，讓毛玻璃的折射產生動態變化 */
+        body::before {
+            content: ""; position: fixed; top: 30%; left: 30%; width: 40vw; height: 40vw;
+            background: rgba(255, 235, 240, 0.3);
+            border-radius: 50%; z-index: -1; filter: blur(60px);
+            animation: float1 20s infinite alternate ease-in-out;
+        }
+        @keyframes float1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10vw, 15vh) scale(1.2); } }
+
+        .fw-bold { font-weight: 500 !important; } /* 收斂粗體，維持優雅 */
+
+        /* 導覽列 */
+        .navbar { 
+            background: rgba(255, 255, 255, 0.15) !important; 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+        .navbar-brand { font-weight: 700; color: #b55a75 !important; letter-spacing: 2px; }
+
+        /* ==========================================
+           🪟 核心：頂級櫻花粉玻璃面板設計
+        ========================================== */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 8px 32px 0 rgba(219, 112, 147, 0.1);
-            border-radius: 16px; overflow: hidden;
+            /* 1. 表面反光漸層：左上較白不透明，右下接近全透 */
+            background: linear-gradient(135deg, rgba(253, 242, 246, 0.5) 0%, rgba(255, 255, 255, 0.1) 100%);
+            /* 2. 極致深度模糊 */
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            /* 3. 精緻的玻璃切邊高光 */
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            /* 4. 懸浮空氣陰影 */
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1); 
+            border-radius: 20px; overflow: hidden;
         }
 
         .sticky-glass-controls {
             position: sticky; top: 15px; z-index: 1030;
-            background: rgba(255, 240, 245, 0.85); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-radius: 16px; box-shadow: 0 8px 24px rgba(219, 112, 147, 0.15);
+            background: linear-gradient(135deg, rgba(253, 242, 246, 0.6) 0%, rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8); border-left: 1px solid rgba(255, 255, 255, 0.8);
+            border-right: 1px solid rgba(255, 255, 255, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); border-radius: 20px; 
         }
 
+        /* 按鈕果凍玻璃質感 */
         .btn-glass {
-            background: rgba(255, 183, 197, 0.4); backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.9); color: #DB7093;
-            font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(219, 112, 147, 0.08);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6); color: #b55a75;
+            font-weight: 500; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
-        .btn-glass:hover:not(:disabled) {
-            background: #FFB7C5; color: #FFF; border-color: #FFB7C5; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
-        }
+        .btn-glass:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); color: #b55a75; border-color: #FFF; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); }
         .btn-glass:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .btn-glass-primary {
-            background: rgba(219, 112, 147, 0.85); backdrop-filter: blur(4px);
-            border: 1px solid #DB7093; color: #FFF; font-weight: bold; border-radius: 8px; transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(219, 112, 147, 0.7) 0%, rgba(181, 90, 117, 0.9) 100%);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4); color: #FFF; font-weight: 500; border-radius: 12px; transition: all 0.3s ease;
+            box-shadow: 0 6px 16px rgba(181, 90, 117, 0.2);
         }
-        .btn-glass-primary:hover:not(:disabled) { background: #DB7093; color: #FFF; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(219, 112, 147, 0.3); }
+        .btn-glass-primary:hover:not(:disabled) { background: #b55a75; color: #FFF; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(181, 90, 117, 0.3); border-color: #FFF; }
         .btn-glass-primary:disabled { opacity: 0.7; cursor: not-allowed; }
 
+        /* 表單輸入框 */
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(244, 207, 224, 0.9); color: #4A4A4A; border-radius: 8px; transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.6); color: #2c3e50; 
+            border-radius: 12px; transition: all 0.3s ease; font-weight: 400; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
-        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.95); border-color: #DB7093; box-shadow: 0 0 0 4px rgba(219, 112, 147, 0.15); }
-        .locked-field { background-color: rgba(244, 207, 224, 0.3) !important; color: #888 !important; cursor: not-allowed; }
+        .form-control:focus, .form-select:focus { background: rgba(255, 255, 255, 0.9); border-color: #b55a75; box-shadow: 0 0 0 4px rgba(181, 90, 117, 0.15); color: #b55a75; }
+        .locked-field { background-color: rgba(220, 225, 235, 0.3) !important; color: #7f8c8d !important; cursor: not-allowed; }
         
-        .form-check-input:checked { background-color: #DB7093; border-color: #DB7093; }
+        .form-check-input:checked { background-color: #b55a75; border-color: #b55a75; }
+        .text-pink { color: #b55a75 !important; }
 
-        .modal-content {
-            background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 20px; box-shadow: 0 16px 48px rgba(219, 112, 147, 0.2);
+        /* 彈出視窗與底部面板 */
+        .modal-content, .offcanvas {
+            background: linear-gradient(135deg, rgba(253, 242, 246, 0.7) 0%, rgba(255, 255, 255, 0.2) 100%);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid rgba(255, 255, 255, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.9);
+            border-right: 1px solid rgba(255, 255, 255, 0.2); border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
         }
-        .modal-header { border-bottom: 1px solid rgba(244, 207, 224, 0.7); }
-        .modal-footer { border-top: 1px solid rgba(244, 207, 224, 0.7); }
-        .sakura-header { background: rgba(255, 183, 197, 0.6); color: #DB7093; border-radius: 20px 20px 0 0; font-weight: bold; }
-        .rose-header { background: rgba(219, 112, 147, 0.85); color: #FFF; border-radius: 20px 20px 0 0; font-weight: bold; }
+        .modal-header { border-bottom: 1px solid rgba(255, 255, 255, 0.4); }
+        .modal-footer { border-top: 1px solid rgba(255, 255, 255, 0.4); }
+        .sakura-header { background: rgba(255, 255, 255, 0.2); color: #b55a75; border-radius: 24px 24px 0 0; font-weight: 500; }
+        .rose-header { background: rgba(181, 90, 117, 0.7); color: #FFF; border-radius: 24px 24px 0 0; font-weight: 500; }
 
-        .table { color: #4A4A4A; margin-bottom: 0; }
+        .table { color: #2c3e50; margin-bottom: 0; background: transparent; }
         .table-light th { 
-            background: rgba(255, 240, 245, 0.8) !important; backdrop-filter: blur(8px);
-            color: #DB7093; border-bottom: 2px solid #FFB7C5 !important; font-weight: 700; white-space: nowrap;
+            background: rgba(255, 255, 255, 0.4) !important; backdrop-filter: blur(8px);
+            color: #b55a75; border-bottom: 2px solid rgba(181,90,117,0.3) !important; font-weight: 500; white-space: nowrap;
         }
-        .table td { border-bottom: 1px solid rgba(244, 207, 224, 0.4); white-space: nowrap; vertical-align: middle; }
+        .table td { border-bottom: 1px solid rgba(255, 255, 255, 0.3); white-space: nowrap; vertical-align: middle; background: transparent; font-weight: 300; }
 
-        #visualArea { height: 500px; width: 100%; border: 2px solid rgba(255,255,255,0.9); border-radius: 16px; overflow: hidden; position: relative; background: rgba(255,255,255,0.4); z-index: 1; }
+        /* 地圖區塊 */
+        #visualArea { height: 500px; width: 100%; border: 1px solid rgba(255,255,255,0.6); border-radius: 20px; overflow: hidden; position: relative; background: rgba(255,255,255,0.2); z-index: 1; backdrop-filter: blur(10px); box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
         #map { height: 100%; width: 100%; }
         #canvasArea { height: 100%; width: 100%; display: none; cursor: pointer; }
-        .spinner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 240, 245, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: bold; color: #DB7093; display: none; border-radius: 16px; }
-        .map-label { background: transparent; border: none; box-shadow: none; }
+        .spinner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(253, 242, 246, 0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000; font-weight: 500; color: #b55a75; display: none; border-radius: 20px; }
+        .map-label { background: transparent; border: none; box-shadow: none; font-weight: 500 !important; color: #2c3e50 !important; }
 
-        /* Flatpickr */
+        /* Flatpickr 時間月曆 */
         .flatpickr-calendar {
-            background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(10px) !important;
-            border: 1px solid #FFB7C5 !important; box-shadow: 0 8px 32px rgba(219, 112, 147, 0.2) !important; border-radius: 12px !important;
+            background: rgba(253, 242, 246, 0.85) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15) !important; border-radius: 16px !important;
+            font-family: 'Noto Sans TC', sans-serif !important;
         }
-        .flatpickr-day.selected { background: #DB7093 !important; border-color: #DB7093 !important; }
+        .flatpickr-day.selected { background: #b55a75 !important; border-color: #b55a75 !important; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -122,11 +168,11 @@
     <div class="sticky-glass-controls p-3 mb-3 d-none d-md-block">
         <div class="row align-items-end">
             <div class="col-md-3">
-                <label class="form-label fw-bold text-pink" style="color: #DB7093;">分組篩選 (國家-地區)</label>
+                <label class="form-label fw-bold text-pink">分組篩選 (國家-地區)</label>
                 <select class="form-select" id="groupFilterDesk" onchange="syncFilters('desk')"></select>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-bold text-pink" style="color: #DB7093;">狀態篩選</label>
+                <label class="form-label fw-bold text-pink">狀態篩選</label>
                 <select class="form-select" id="statusFilterDesk" onchange="syncFilters('desk')">
                     <option value="ALL">所有狀態</option>
                     <option value="🟢 閒置中">🟢 閒置中</option>
@@ -137,7 +183,7 @@
             <div class="col-md-6 d-flex justify-content-end align-items-center">
                 <div class="form-check form-switch me-4 fs-5 mb-0">
                     <input class="form-check-input shadow-sm" type="checkbox" id="mapToggleDesk" checked onchange="syncFilters('desk')" style="cursor: pointer;">
-                    <label class="form-check-label fw-bold" for="mapToggleDesk" style="color: #DB7093; cursor: pointer;">🗺️ 地圖開關</label>
+                    <label class="form-check-label fw-bold text-pink" for="mapToggleDesk" style="cursor: pointer;">🗺️ 地圖開關</label>
                 </div>
                 <button class="btn btn-glass shadow-sm px-3 fw-bold fs-5" title="重新整理" onclick="loadData()">🔄</button>
             </div>
@@ -179,9 +225,9 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(244, 207, 224, 0.5);">
+                <div class="d-flex justify-content-between align-items-center p-3" style="border-top: 1px solid rgba(255, 255, 255, 0.3);">
                     <button class="btn btn-glass btn-sm px-3 fw-bold" id="prevPageBtn" onclick="changePage(-1)">◀ 上一頁</button>
-                    <span id="pageIndicator" style="color: #DB7093; font-weight: bold;">1 / 1 頁</span>
+                    <span id="pageIndicator" class="text-pink fw-bold">1 / 1 頁</span>
                     <button class="btn btn-glass btn-sm px-3 fw-bold" id="nextPageBtn" onclick="changePage(1)">下一頁 ▶</button>
                 </div>
             </div>
@@ -208,7 +254,7 @@
 </button>
 
 <!-- 手機版：底部彈出控制面板 (Offcanvas) -->
-<div class="offcanvas offcanvas-bottom glass-panel h-auto" tabindex="-1" id="mobileFiltersPanel" style="border-radius: 20px 20px 0 0;">
+<div class="offcanvas offcanvas-bottom h-auto" tabindex="-1" id="mobileFiltersPanel" style="border-radius: 24px 24px 0 0;">
     <div class="offcanvas-header sakura-header">
         <h5 class="offcanvas-title fw-bold">🔍 篩選與地圖設定</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
@@ -216,11 +262,11 @@
     <div class="offcanvas-body pb-4">
         <div class="row mb-4">
             <div class="col-6">
-                <label class="form-label fw-bold" style="color: #DB7093;">分組篩選</label>
+                <label class="form-label fw-bold text-pink">分組篩選</label>
                 <select class="form-select shadow-sm" id="groupFilterMob" onchange="syncFilters('mob')"></select>
             </div>
             <div class="col-6">
-                <label class="form-label fw-bold" style="color: #DB7093;">狀態</label>
+                <label class="form-label fw-bold text-pink">狀態</label>
                 <select class="form-select shadow-sm" id="statusFilterMob" onchange="syncFilters('mob')">
                     <option value="ALL">所有狀態</option>
                     <option value="🟢 閒置中">🟢 閒置中</option>
@@ -232,7 +278,7 @@
         <div class="d-flex justify-content-between align-items-center px-2">
             <div class="form-check form-switch fs-4 mb-0">
                 <input class="form-check-input shadow-sm" type="checkbox" id="mapToggleMob" checked onchange="syncFilters('mob')" style="cursor: pointer;">
-                <label class="form-check-label fw-bold" for="mapToggleMob" style="color: #DB7093;">🗺️ 地圖開關</label>
+                <label class="form-check-label fw-bold text-pink" for="mapToggleMob">🗺️ 地圖開關</label>
             </div>
             <button class="btn btn-glass px-4 fs-5 fw-bold shadow-sm" onclick="loadData(); bootstrap.Offcanvas.getInstance(document.getElementById('mobileFiltersPanel')).hide();">🔄</button>
         </div>
@@ -291,9 +337,9 @@
                         <label class="form-label fw-bold" style="color:#c62828;">完成時間</label>
                         <input type="text" class="form-control bg-white" id="updFinishTime" placeholder="點擊選擇時間">
                     </div>
-                    <div id="resetTimeDisplayWrapper" class="mt-2 text-center" style="display: none; background: rgba(255,183,197,0.3); border-radius: 8px; padding: 12px; border: 1px dashed #DB7093;">
-                        <span style="color:#c62828; font-weight:bold; font-size:1.1em;">⏳ 重置時間：</span><br>
-                        <span id="lockedResetTimeStr" style="font-weight:bold; font-size:1.3em; color:#4A4A4A; letter-spacing: 1px;">--/-- --:--</span>
+                    <div id="resetTimeDisplayWrapper" class="mt-2 text-center" style="display: none; background: rgba(255,255,255,0.4); border-radius: 12px; padding: 12px; border: 1px dashed rgba(181,90,117,0.4);">
+                        <span style="color:#c62828; font-weight:500; font-size:1.1em;">⏳ 重置時間：</span><br>
+                        <span id="lockedResetTimeStr" style="font-weight:700; font-size:1.3em; color:#2c3e50; letter-spacing: 1px;">--/-- --:--</span>
                     </div>
                 </div>
             </div>
@@ -334,9 +380,9 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="alert" style="background: rgba(255, 183, 197, 0.3); border: 1px solid #FFB7C5; border-radius: 12px;">
+                <div class="alert" style="background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.6); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span style="color: #DB7093;"><strong>智慧讀取：</strong>匯入檔案或貼上座標會自動判斷。</span>
+                        <span class="text-pink"><strong>智慧讀取：</strong>匯入檔案或貼上座標會自動判斷。</span>
                         <button class="btn btn-glass btn-sm fw-bold shadow-sm" onclick="handleManualParse()">🔄 重新解析</button>
                     </div>
                 </div>
@@ -344,7 +390,7 @@
                     <input class="form-control" type="file" id="gpxFile" accept=".gpx" onchange="handleGpxChange(event)">
                     <div id="gpxStatus" class="form-text mt-1"></div>
                 </div>
-                <hr style="border-color: #F4CFE0;">
+                <hr style="border-color: rgba(255,255,255,0.4);">
                 
                 <div class="row">
                     <div class="col-md-2 mb-3">
@@ -380,7 +426,6 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    // ✅ 您的專屬部署網址
     const API_URL = "https://script.google.com/macros/s/AKfycbwOMpVPj70K-0zc3NtvJXsYXQPV8J0ArxW60UkNugdQ5RXoYwGxWNDiqqQlg3U-Q2_4kg/exec";
     
     let allData = [];
@@ -389,7 +434,7 @@
     let polygonLayers = [];
     
     let isAdminLoggedIn = false;
-    let adminRole = ''; // 'super' 或是 'builder'
+    let adminRole = ''; 
     let adminAcc = '';
     let adminPwd = '';
     
@@ -461,9 +506,6 @@
         }
     }
 
-    // ==========================================
-    // 登入狀態管理 (✅ 改為從後端動態查核)
-    // ==========================================
     function checkLoginStatus() {
         if(sessionStorage.getItem('admin_logged_in') === 'true') {
             isAdminLoggedIn = true;
@@ -493,7 +535,7 @@
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r=>r.json());
             
             if(res.success) {
-                const role = res.role; // 接收權限 (super 或 builder)
+                const role = res.role; 
                 
                 sessionStorage.setItem('admin_logged_in', 'true');
                 sessionStorage.setItem('admin_role', role);
@@ -534,15 +576,12 @@
     function renderAdminNav() {
         let roleLabel = (adminRole === 'super') ? '👑 超級管理員' : '👷 建田專員';
         document.getElementById('navButtons').innerHTML = `
-            <span class="text-pink fw-bold me-3 d-none d-md-inline" style="color:#DB7093;">${roleLabel}</span>
+            <span class="fw-bold me-3 d-none d-md-inline" style="color:#FFF; text-shadow: 0px 1px 4px rgba(0,0,0,0.4);">${roleLabel}</span>
             <button class="btn btn-glass-primary btn-sm me-2 px-3" onclick="new bootstrap.Modal(document.getElementById('adminModal')).show()">⚙️ 新增花田</button>
             <button class="btn btn-glass btn-sm px-3" onclick="logoutAdmin()">🚪 登出</button>
         `;
     }
 
-    // ==========================================
-    // 電腦/手機 控制器連動同步
-    // ==========================================
     function syncFilters(source) {
         let grp, sts, mapMode;
         if(source === 'desk') {
@@ -608,9 +647,6 @@
         renderTable();
     }
 
-    // ==========================================
-    // 渲染表格 
-    // ==========================================
     function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
@@ -642,14 +678,14 @@
                 
                 <td class="fw-bold">${d.seq}</td>
                 
-                <td style="color:${colorConfig[d.status]}; font-weight:bold;">
+                <td style="color:${colorConfig[d.status]}; font-weight:500;">
                     <span class="d-md-none fs-5">${statusIcon}</span>
                     <span class="d-none d-md-inline">${d.status}</span>
                 </td>
                 
                 <td>${d.user || '無'}</td>
                 <td>${d.flower || '無'}</td>
-                <td class="fw-bold" style="color: #DB7093;">${d.flowerCount || 0}</td>
+                <td class="fw-bold text-pink">${d.flowerCount || 0}</td>
                 
                 <td>${stTime}</td>
                 <td>${rTime}</td>
@@ -663,9 +699,6 @@
         });
     }
 
-    // ==========================================
-    // 地圖與畫布
-    // ==========================================
     function initMap() {
         map = L.map('map').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -683,7 +716,7 @@
             if(hullPoints.length > 0) {
                 const poly = L.polygon(hullPoints, { color: colorConfig[d.status], fillColor: fillConfig[d.status], fillOpacity: 0.6, weight: 2 }).addTo(map);
                 
-                const labelHtml = `<div style="background:rgba(255,240,245,0.85); padding:2px 8px; border-radius:6px; font-size:12px; font-weight:bold; border:1px solid #FFB7C5; color:#4A4A4A; display:inline-block; white-space:nowrap; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(219,112,147,0.2); backdrop-filter: blur(4px);">${d.city}${d.seq}</div>`;
+                const labelHtml = `<div style="background:rgba(255,255,255,0.85); padding:2px 8px; border-radius:6px; font-size:12px; font-weight:500; border:1px solid rgba(255,255,255,0.8); color:#2c3e50; display:inline-block; white-space:nowrap; transform: translate(-50%, -50%); box-shadow: 0 4px 12px rgba(0,0,0,0.15); backdrop-filter: blur(8px);">${d.city}${d.seq}</div>`;
                 const mk = L.marker(poly.getBounds().getCenter(), { icon: L.divIcon({ className: 'map-label', html: labelHtml, iconSize: [0, 0] }) }).addTo(map);
                 
                 polygonLayers.push(poly, mk);
@@ -728,16 +761,16 @@
             ctx.fillStyle = fillConfig[d.status]; ctx.globalAlpha = 0.7; ctx.fill(p2d);
             ctx.strokeStyle = colorConfig[d.status]; ctx.globalAlpha = 1.0; ctx.lineWidth = 2; ctx.stroke(p2d);
             
-            ctx.font = 'bold 12px Arial';
+            ctx.font = '500 12px "Noto Sans TC", Arial';
             const textStr = `${d.city}${d.seq}`;
             const textWidth = ctx.measureText(textStr).width;
             const cx = sumX / d.pts.length, cy = sumY / d.pts.length;
             
-            ctx.fillStyle = 'rgba(255, 240, 245, 0.85)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             ctx.beginPath(); ctx.roundRect(cx - textWidth/2 - 6, cy - 12, textWidth + 12, 24, 6); ctx.fill();
-            ctx.strokeStyle = '#FFB7C5'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1; ctx.stroke();
             
-            ctx.fillStyle = '#4A4A4A'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#2c3e50'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(textStr, cx, cy);
             currentCanvasPaths.push({ path: p2d, info: d });
         });
@@ -752,9 +785,6 @@
         }
     }
 
-    // ==========================================
-    // 狀態更新防呆解鎖
-    // ==========================================
     function openUpdateModal(country, city, seq) {
         const t = allData.find(d => String(d.country) === String(country) && String(d.city) === String(city) && String(d.seq) === String(seq));
         if(!t) { alert("找不到該筆資料，請重新整理！"); return; }
@@ -872,7 +902,7 @@
 
     async function handleManualParse() {
         const fileInput = document.getElementById("gpxFile"), coordsBox = document.getElementById("admCoords"), statusTxt = document.getElementById("gpxStatus");
-        statusTxt.innerText = "⏳ 正在處理中..."; statusTxt.style.color = "#DB7093";
+        statusTxt.innerText = "⏳ 正在處理中..."; statusTxt.style.color = "#C2185B";
         let targetLat = "", targetLon = "";
 
         if (fileInput.files.length > 0) {
@@ -912,7 +942,7 @@
                     try { document.getElementById("admCountry").value = new Intl.DisplayNames(['zh-TW'], { type: 'region' }).of(resEn.address.country_code.toUpperCase()); }
                     catch(e){ document.getElementById("admCountry").value = resEn.address.country; }
                 }
-                statusTxt.innerText = "🌸 判斷完成！您可以自由修改。"; statusTxt.style.color = "#DB7093";
+                statusTxt.innerText = "🌸 判斷完成！您可以自由修改。"; statusTxt.style.color = "#C2185B";
             } else statusTxt.innerText = "❌ 查無資訊。";
         } catch(e) { statusTxt.innerText = "❌ 反查失敗。"; }
     }
@@ -920,6 +950,7 @@
     async function submitAdmin() {
         const rawCoords = document.getElementById("admCoords").value;
         const compressedCoords = rawCoords.split('\n').map(c => c.trim()).filter(c => c).join(';');
+        
         const payload = {
             action: "addLocation", 
             account: adminAcc, 
